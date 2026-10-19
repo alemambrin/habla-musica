@@ -1467,6 +1467,28 @@ EX.hear=(c,it)=>{
   later(listen,350);
 };
 
+/* La cuenta previa suena por el parlante y el micrófono la oye: sirve para medir la latencia y se descarta */
+function leakLatency(ons,clicks){
+  const ds=[],use=clicks.length>=3?clicks.slice(0,-1):[];
+  use.forEach(c=>{const o=ons.find(t=>t>=c&&t<c+.45);if(o!==undefined)ds.push(o-c)});
+  if(ds.length<2)return null;
+  ds.sort((a,b)=>a-b);
+  return ds[ds.length-1]-ds[0]>.1?null:ds[ds.length>>1];
+}
+/* ons: instantes (s del reloj de audio) en que se oyó un sonido. s: inicio del patrón. L: latencia estimada. */
+function voiceMatch(ons,s,expPos,restPos,bd,L,wide,tol){
+  const rel=ons.map(t=>t-s-.01);
+  let best=null;
+  for(let d=wide?-.12:-.06;d<=(wide?.4:.12)+1e-9;d+=.01){
+    let taps=rel.map(x=>x-L-d);
+    // un "sh" dicho en un silencio no cuenta como sonido de más
+    taps=taps.filter(t=>{const dr=Math.min(9,...restPos.map(p=>Math.abs(t-p*bd))),de=Math.min(9,...expPos.map(p=>Math.abs(t-p*bd)));return !(dr<bd*.3&&dr<de)});
+    const r=evalTaps(expPos,taps,bd,tol),sc=r.hits*100-r.extra*10-Math.abs(d)*10;
+    if(!best||sc>best.sc)best={sc,r,d,lat:L+d};
+  }
+  return best;
+}
+
 /* decir: la voz sigue el pulso (con micrófono opcional, como en Duolingo) */
 EX.say=(c,it)=>{
   const tgt=c.pat(),st=c.st,tl=timeline(tgt.meas),canMic=micOK();
@@ -1493,21 +1515,24 @@ EX.say=(c,it)=>{
     fb('A tiempo. Decirlo en voz alta ayuda al oído.','ok');
     c.ask([['Otra vez',mine]]);
   };
-  const evalVoice=ons=>{
-    const exp=tl.evs.filter(e=>e.onset),expT=exp.map(e=>e.pos*bd),rests=tl.evs.filter(e=>!e.onset).map(e=>e.pos*bd);
+  const evalVoice=(all,t0,s,clicks)=>{
+    const exp=tl.evs.filter(e=>e.onset),expPos=exp.map(e=>e.pos),rests=tl.evs.filter(e=>!e.onset).map(e=>e.pos);
+    const Lm=leakLatency(all,clicks);
+    // se descartan los sonidos de la cuenta previa (los clics que entran al micrófono)
+    const lastC=clicks[clicks.length-1],guard=Math.min((Lm!=null?Lm+.2:.35),bd*.8);
+    const ons=all.filter(t=>t>=lastC+guard);
     if(!ons.length){
       fb('No te escuché. Acercate al micrófono y decilo un poco más fuerte.','bad');
       c.ask([['Probar otra vez',mineMic]]);return;
     }
-    // un "sh" dicho en un silencio no cuenta como sonido de más
-    const taps=ons.filter(t=>{const dr=Math.min(9,...rests.map(r=>Math.abs(t-r))),de=Math.min(9,...expT.map(e=>Math.abs(t-e)));return !(dr<bd*.3&&dr<de)});
+    const L0=Lm!=null?Lm:(save.micLat!=null?save.micLat:Math.min(.3,(ac().outputLatency||0)+.03));
     let mg=1;for(let q=1;q<exp.length;q++)mg=Math.min(mg,exp[q].pos-exp[q-1].pos);
-    const r=evalTaps(exp.map(e=>e.pos),taps,bd,Math.min(.4,Math.max(.2,mg*.5)));
+    const m=voiceMatch(ons,s,expPos,rests,bd,L0,Lm==null,Math.min(.4,Math.max(.2,mg*.5))),r=m.r;
+    if(r.hits>=Math.ceil(exp.length/2)){const lat=Math.max(0,Math.min(.6,m.lat));save.micLat=save.micLat==null?lat:save.micLat*.5+lat*.5;persist()}
     const sy=sylTL(tgt.meas);
     exp.forEach((e,k)=>sy.forEach((y,j)=>{if(y.ev===e.idx){const n=W.querySelector('.sy[data-k="'+j+'"]');if(n)n.classList.add(r.ok[k]?'ok':'miss')}}));
     let msg='Te escuché '+r.hits+' de '+exp.length;
     if(r.extra)msg+=' · '+r.extra+(r.extra>1?' sonidos':' sonido')+' de más';
-    if(r.devs.length>=3){const mean=r.devs.reduce((x,y)=>x+y,0)/r.devs.length/bd;if(mean>.12)msg+=' · un poco atrasado';else if(mean<-.12)msg+=' · un poco adelantado'}
     fb(msg,r.acc>=.65?'ok':'bad');
     c.report({keys:tgt.keys,skill:'d',val:r.acc,scored:true});
     c.ask([['Probar otra vez',mineMic]]);
@@ -1520,13 +1545,13 @@ EX.say=(c,it)=>{
       menu();return;
     }
     hint.textContent='Escuchá la cuenta y decilo en voz alta. El pulso se ve pero no suena, así no te tapa.';
-    const a=ac(),t0=a.currentTime+.2,s=t0+cin*bd,ons=[];
-    for(let i=0;i<cin;i++){click(t0+i*bd,i===0,.16);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
+    const a=ac(),t0=a.currentTime+.2,s=t0+cin*bd,all=[],clicks=[];
+    for(let i=0;i<cin;i++){click(t0+i*bd,i===0,.12);clicks.push(t0+i*bd);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
     for(let b=0;b<tl.total;b++)atAudio(s+b*bd,()=>lightDot(dots,b%bpb));
     meter.hidden=false;const bar=meter.querySelector('i');
-    micListen(t=>{if(t>=s-bd*.4&&t<=s+tl.total*bd+bd*.5)ons.push(t-s-save.offset/1000-.01)},lv=>{bar.style.width=Math.round(lv*100)+'%'});
+    micListen(t=>{if(all.length<80)all.push(t)},lv=>{bar.style.width=Math.round(lv*100)+'%'});
     acts([['Cancelar',()=>{cancelPlay();meter.hidden=true;hint.textContent='Escuchá cómo suena y seguí con la voz.';menu()}]]);
-    atAudio(s+tl.total*bd+bd*.6,()=>{micStop();lightDot(dots,-1);meter.hidden=true;evalVoice(ons)});
+    atAudio(s+tl.total*bd+Math.max(bd*.6,.6),()=>{micStop();lightDot(dots,-1);meter.hidden=true;evalVoice(all,t0,s,clicks)});
   }
   menu();
   later(hear,350);
