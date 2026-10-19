@@ -314,7 +314,15 @@ input[type=range]{accent-color:var(--c4);min-height:44px;width:220px;max-width:1
 .mrow b{font:600 17px var(--f-display)}
 .mini{display:block;height:9px;background:var(--line);border-radius:5px;overflow:hidden}
 .mini i{display:block;height:100%;border-radius:5px}
+.micmeter{display:flex;align-items:center;gap:10px;margin-top:14px;color:var(--muted);font-size:14px}.micmeter[hidden]{display:none}.micmeter b{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden}.micmeter i{display:block;height:100%;width:0;background:var(--c4);transition:width .06s linear}
 .mascot{display:block;flex:none;overflow:visible}
+/* Corchea: tinta en claro, papel en oscuro */
+.mascot{--mi:#1d2430;--mp:#f3efe6;--mh:#3a4660}
+.mascot .mi{fill:var(--mi)}.mascot .mp{fill:var(--mp)}.mascot .mps{stroke:var(--mp)}.mascot .mis{stroke:var(--mi)}.mascot .mh{stroke:var(--mh)}.mascot .mes{stroke:var(--mp);stroke-width:2.5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mascot{--mi:#e8e3d6;--mp:#1d2430;--mh:#bdb7a8}}
+:root[data-theme="dark"] .mascot{--mi:#e8e3d6;--mp:#1d2430;--mh:#bdb7a8}
+.mascot.onink{--mi:#1d2430;--mp:#f3efe6;--mh:#3a4660}
+
 .hop{animation:hop .7s var(--ease) infinite alternate}
 @keyframes hop{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-12px) rotate(3deg)}}
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
@@ -834,7 +842,7 @@ function pluck(f,t,d){tone(f,t,d,'triangle',.4);tone(f*2,t,d*.5,'sine',.1)}
 let TM=[],RAF=0,KEYS=null;
 const later=(fn,ms)=>{const id=setTimeout(fn,Math.max(0,ms));TM.push(id);return id};
 const atAudio=(t,fn)=>later(fn,(t-ac().currentTime)*1000);
-function cancelPlay(){TM.forEach(clearTimeout);TM=[];cancelAnimationFrame(RAF);RAF=0;killAudio()}
+function cancelPlay(){TM.forEach(clearTimeout);TM=[];cancelAnimationFrame(RAF);RAF=0;killAudio();micStop()}
 function stopAll(){cancelPlay();if(KEYS){document.removeEventListener('keydown',KEYS);KEYS=null}}
 function onKeys(fn){if(KEYS)document.removeEventListener('keydown',KEYS);KEYS=fn;document.addEventListener('keydown',fn)}
 const dotsHTML=(n,cls)=>'<div class="beats '+(cls||'')+'" aria-hidden="true">'+'<i></i>'.repeat(n)+'</div>';
@@ -865,28 +873,35 @@ function playPattern(tl,o){
   atAudio(s+tl.total*o.bd+.1,()=>{if(o.dots)lightDot(o.dots,-1);if(o.words)hiSyl(o.words,-1);if(o.done)o.done()});
 }
 
-/* ---------- dibujos: Bombi (un bombo legüero), íconos y escenas ---------- */
+/* ---------- dibujos: Corchea (una nota con carácter), íconos y escenas ---------- */
+const COR_FLAG={
+  rel:'M171,36 C171,78 214,92 214,136 C206,114 192,106 171,94 Z',
+  up:'M171,36 C171,76 222,84 220,126 C214,106 196,98 171,92 Z',
+  flat:'M171,36 L226,52 L226,66 L171,56 Z',
+  drop:'M171,36 C176,70 204,100 196,156 C186,128 178,108 171,94 Z',
+  wob:'M171,36 C171,70 226,70 214,108 C206,90 190,86 171,90 Z'
+};
 function mascot(mood,size,cls){
   size=size||64;mood=mood||'happy';
-  const cx=50,cy=54,n=16,r1=37,r2=44;
-  const P=(a,r)=>(cx+Math.cos(a)*r).toFixed(1)+' '+(cy+Math.sin(a)*r).toFixed(1);
-  let lace='';
-  for(let i=0;i<n;i++){const a0=i/n*Math.PI*2,a1=(i+.5)/n*Math.PI*2,a2=(i+1)/n*Math.PI*2;lace+='M'+P(a0,r1)+'L'+P(a1,r2)+'L'+P(a2,r1)}
-  const ink='#23303B';
-  let sticks,face;
-  const stick=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#E2A765" stroke-width="5.5" stroke-linecap="round"/><circle cx="${x2}" cy="${y2}" r="5" fill="#F6D49A" stroke="#E2A765" stroke-width="1.5"/>`;
-  if(mood==='cheer')sticks=stick(18,36,4,4)+stick(82,36,96,4);
-  else if(mood==='oops')sticks=stick(14,70,4,94)+stick(86,70,96,94);
-  else sticks=stick(18,30,6,8)+stick(82,30,94,8);
-  const eyes=`<ellipse cx="38" cy="50" rx="4.4" ry="5.6" fill="${ink}"/><ellipse cx="62" cy="50" rx="4.4" ry="5.6" fill="${ink}"/><circle cx="39.6" cy="47.6" r="1.7" fill="#fff"/><circle cx="63.6" cy="47.6" r="1.7" fill="#fff"/>`;
-  const cheeks='<circle cx="29" cy="62" r="5" fill="#FF9DA3" opacity=".65"/><circle cx="71" cy="62" r="5" fill="#FF9DA3" opacity=".65"/>';
-  const st=(d,w)=>`<path d="${d}" fill="none" stroke="${ink}" stroke-width="${w||3.2}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  if(mood==='cheer')face=eyes+cheeks+`<path d="M40 60q10 17 20 0z" fill="#7A2E2E"/><ellipse cx="50" cy="68.5" rx="4.6" ry="2.6" fill="#FF8A8A"/>`;
-  else if(mood==='think')face=eyes.replace(/cy="50"/g,'cy="48"')+cheeks+st('M44 66h12')+st('M31 38l13-4')+st('M57 36l13 4');
-  else if(mood==='oops')face=eyes+cheeks+st('M41 69q4.5-6 9 0t9 0')+st('M31 41l13 5')+st('M69 41l-13 5')+'<path d="M78 34q4 7 0 10a4 4 0 0 1-6-3q2-4 6-7z" fill="#6EC7F5"/>';
-  else if(mood==='shh')face=st('M33 52q5-6 10 0')+st('M57 52q5-6 10 0')+cheeks+st('M45 67q5 3 10 0')+'<rect x="46.5" y="56" width="7.5" height="19" rx="3.7" fill="#FFD3A8" stroke="#E3A66F" stroke-width="1.8"/>';
-  else face=eyes+cheeks+st('M41 62q9 10 18 0');
-  return `<svg class="mascot ${cls||''}" viewBox="0 0 100 108" width="${size}" height="${Math.round(size*1.08)}" aria-hidden="true">${sticks}<ellipse cx="50" cy="104" rx="28" ry="3.6" fill="rgba(0,0,0,.14)"/><circle cx="50" cy="54" r="46" fill="#B8692F"/><circle cx="50" cy="54" r="46" fill="none" stroke="#8F4E1F" stroke-width="3"/><path d="${lace}" fill="none" stroke="#FFE7C2" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="50" cy="54" r="34" fill="#FFF3DC" stroke="#E3C38A" stroke-width="2.5"/>${face}</svg>`;
+  const P={happy:'escucha',shh:'escucha',cheer:'acierto',think:'exigente',oops:'duda',apuro:'apuro',orgullo:'orgullo'}[mood]||'escucha';
+  const brow=(cx,cy,ang,dy)=>`<path class="mps" d="M${cx-14},${cy-24+dy} L${cx+14},${cy-24+dy}" stroke-width="6" stroke-linecap="round" fill="none" transform="rotate(${ang} ${cx} ${cy-24+dy})"/>`;
+  const eye=(k,cx,cy,px,py,lid)=>{
+    const id='mx'+P+k;
+    return `<clipPath id="${id}"><ellipse cx="${cx}" cy="${cy}" rx="12.5" ry="15"/></clipPath><ellipse cx="${cx}" cy="${cy}" rx="12.5" ry="15" fill="#f3efe6" class="mes"/><circle cx="${cx+px}" cy="${cy+py}" r="6.8" fill="#1d2430" clip-path="url(#${id})"/>`+(lid?`<rect class="mi" x="${cx-14}" y="${cy-16}" width="28" height="${(32*lid).toFixed(1)}" clip-path="url(#${id})"/>`:'');
+  };
+  const shut=(cx,cy)=>`<path class="mps" d="M${cx-12},${cy+4} Q${cx},${cy-12} ${cx+12},${cy+4}" fill="none" stroke-width="5" stroke-linecap="round"/>`;
+  const line=`<path class="mps" d="M98,216 L124,214" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  const L=[86,182],R=[130,170];
+  let flag=COR_FLAG.rel,face='',wrap='',jump=0,extra='';
+  if(P==='escucha'){face=eye('l',L[0],L[1],3,1,.12)+eye('r',R[0],R[1],3,1,.12)+brow(L[0],L[1],0,0)+brow(R[0],R[1],0,0)+line}
+  else if(P==='acierto'){flag=COR_FLAG.up;jump=1;face=shut(L[0],L[1])+shut(R[0],R[1])+brow(L[0],L[1],-8,-6)+brow(R[0],R[1],-8,-6)+`<path class="mp" d="M92,208 Q112,246 134,206 Z"/>`}
+  else if(P==='duda'){flag=COR_FLAG.drop;wrap='rotate(-5 108 262)';face=eye('l',L[0],L[1],-3,2,.35)+eye('r',R[0],R[1],-3,2,0)+brow(L[0],L[1],10,0)+brow(R[0],R[1],-14,-8)+`<path class="mps" d="M92,218 q8,-8 16,0 t16,-4" fill="none" stroke-width="5" stroke-linecap="round"/>`}
+  else if(P==='exigente'){flag=COR_FLAG.flat;face=eye('l',L[0],L[1],4,0,.5)+eye('r',R[0],R[1],4,0,.5)+brow(L[0],L[1],14,6)+brow(R[0],R[1],-14,6)+line}
+  else if(P==='apuro'){flag=COR_FLAG.wob;face=eye('l',L[0],L[1],-4,2,0)+eye('r',R[0],R[1],-4,2,0)+brow(L[0],L[1],-14,-4)+brow(R[0],R[1],14,-4)+`<ellipse class="mp" cx="112" cy="218" rx="6" ry="8"/>`;extra='<path d="M60,128 q-8,12 0,17 q8,-5 0,-17z" fill="#6EC7F5"/>'}
+  else {wrap='rotate(4 108 262)';face=shut(L[0],L[1])+shut(R[0],R[1])+brow(L[0],L[1],-6,-3)+brow(R[0],R[1],-6,-3)+`<path class="mps" d="M100,214 Q112,222 126,212" fill="none" stroke-width="5" stroke-linecap="round"/>`}
+  const body=`<path class="mis" d="M92,236 L86,262 M86,262 l-12,0 M124,238 L130,262 M130,262 l12,0" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect class="mi" x="158" y="36" width="13" height="150" rx="2"/><ellipse class="mi" cx="108" cy="188" rx="64" ry="48" transform="rotate(-18 108 188)"/><path class="mh" d="M62,168 Q76,142 112,138" fill="none" stroke-width="6" stroke-linecap="round"/><path class="mi" d="${flag}"/><g transform="rotate(-14 108 180)">${face}${extra}</g>`;
+  const w=Math.round(size*.9),h=Math.round(w*1.25);
+  return `<svg class="mascot ${cls||''}" viewBox="0 0 240 300" width="${w}" height="${h}" aria-hidden="true"><ellipse cx="108" cy="266" rx="${jump?46:58}" ry="5" fill="rgba(0,0,0,.14)"/><g transform="${jump?'translate(0 -26) ':''}${wrap}">${body}</g></svg>`;
 }
 const ICON={
   pulse:'<path d="M3 26h9l4-12 6 24 5-18 3 6h15" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -1180,6 +1195,44 @@ function bindPad(pad,R){
 const padHTML='<button type="button" class="pad" disabled>'+ic('voy')+'<span>Tocá acá o usá la barra espaciadora</span></button>';
 const padText=(pad,txt)=>{pad.innerHTML=ic('voy')+'<span>'+txt+'</span>'};
 
+/* ---------- micrófono: marca cuándo decís cada sílaba (detecta el ritmo de la voz, no reconoce palabras) ---------- */
+const MIC={stream:null,an:null,iv:0};
+const micOK=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.isSecureContext!==false);
+function onsetDet(){
+  let floor=null,hist=[],last=-9,n=0;
+  return function(db,t){
+    n++;
+    if(floor===null)floor=db;
+    hist.push(db);if(hist.length>12)hist.shift();
+    if(db<floor+5)floor+=(db-floor)*(db<floor?.2:.03);
+    let ev=false;
+    if(n>12&&db>floor+10&&db>-55){
+      const base=Math.min(...hist.slice(0,-1));
+      if(db-base>4.5&&t-last>.09){ev=true;last=t}
+    }
+    return{ev,floor};
+  };
+}
+async function micOpen(){
+  if(MIC.stream&&MIC.stream.active&&MIC.an)return;
+  const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:false}});
+  const a=ac(),src=a.createMediaStreamSource(s),an=a.createAnalyser();
+  an.fftSize=1024;src.connect(an);MIC.stream=s;MIC.an=an;
+}
+function micStop(){if(MIC.iv){clearInterval(MIC.iv);MIC.iv=0}}
+function micClose(){micStop();if(MIC.stream)MIC.stream.getTracks().forEach(t=>t.stop());MIC.stream=null;MIC.an=null}
+function micListen(onOnset,onLevel){
+  micStop();
+  const an=MIC.an,buf=new Float32Array(an.fftSize),det=onsetDet(),a=ac();
+  MIC.iv=setInterval(()=>{
+    an.getFloatTimeDomainData(buf);
+    let q=0;for(let k=0;k<buf.length;k++)q+=buf[k]*buf[k];
+    const db=20*Math.log10(Math.sqrt(q/buf.length)+1e-7),t=a.currentTime,r=det(db,t);
+    if(onLevel)onLevel(Math.max(0,Math.min(1,(db-r.floor)/30)));
+    if(r.ev)onOnset(t);
+  },8);
+}
+
 /* ---------- ejecutor de sesiones (lecciones y repaso) ---------- */
 let SES=null;
 function planFor(L){
@@ -1279,9 +1332,9 @@ function endSession(){
   const idx=LESSONS.indexOf(L);
   const nxt=L.id==='R'?null:LESSONS[idx+1];
   let msg,mood;
-  if(pct>=85){msg='Muy bien. Tus medidores van subiendo.';mood='cheer'}
-  else if(pct>=65){msg='Va bien. El repaso te ayuda a afianzar lo que quedó flojo.';mood='happy'}
-  else{msg='Esto es parte del camino. Probá de nuevo la lección o hacé un repaso antes de seguir.';mood='think'}
+  if(pct>=85){msg='A tiempo. Tus medidores van subiendo.';mood=pct>=95?'orgullo':'cheer'}
+  else if(pct>=65){msg='Va bien. Un repaso y ajustamos lo que quedó flojo.';mood='happy'}
+  else{msg='Un poquito tarde. Probá de nuevo la lección o hacé un repaso antes de seguir. Yo espero.';mood='think'}
   $('#pStage').innerHTML='<div class="result">'+mascot(mood,150,mood==='cheer'?'hop':'')
     +'<h3>'+(L.id==='R'?'Repaso completo':'Lección completa')+'</h3>'
     +'<div class="stars" aria-label="'+stars+' de 3 estrellas">'+[1,2,3].map(n=>'<span class="'+(n<=stars?'':'off')+'">'+ic('star')+'</span>').join('')+'</div>'
@@ -1403,8 +1456,8 @@ EX.hear=(c,it)=>{
     b.onclick=()=>{
       cancelPlay();
       $('#hCh').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.r)x.classList.add('ok')});
-      if(o.right){b.classList.add('ok');fb('Correcto.','ok')}
-      else{b.classList.add('bad');fb('Sonó la que quedó marcada en verde.','bad')}
+      if(o.right){b.classList.add('ok');fb('A tiempo. Así se hace.','ok')}
+      else{b.classList.add('bad');fb('Casi. Sonó la que quedó en verde. Escuchá de nuevo.','bad')}
       c.report({keys:o.right?tgt.keys:diffKeys(tgt.keys,o.p.keys),skill:'e',val:o.right?1:0,scored:true});
       c.ask([['Escuchar de nuevo',listen]]);
     };
@@ -1414,18 +1467,22 @@ EX.hear=(c,it)=>{
   later(listen,350);
 };
 
-/* decir: la voz sigue el pulso */
+/* decir: la voz sigue el pulso (con micrófono opcional, como en Duolingo) */
 EX.say=(c,it)=>{
-  const tgt=c.pat(),st=c.st,tl=timeline(tgt.meas);
-  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble" id="sHint">Escuchá cómo suena y seguí con la voz.</div></div>'+dotsHTML(c.cfg.bpb)+'<div class="words big" id="sW">'+wordsHTML(tgt.meas)+'</div>';
-  const dots=$('.beats',st),W=$('#sW');
+  const tgt=c.pat(),st=c.st,tl=timeline(tgt.meas),canMic=micOK();
+  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble" id="sHint">Escuchá cómo suena y seguí con la voz.</div></div>'+dotsHTML(c.cfg.bpb)+'<div class="words big" id="sW">'+wordsHTML(tgt.meas)+'</div>'
+    +'<div class="micmeter" id="sMic" hidden><span>Te escucho</span><b><i></i></b></div>';
+  const dots=$('.beats',st),W=$('#sW'),meter=$('#sMic');
+  const bd=c.cfg.bd,bpb=c.cfg.bpb,cin=c.cfg.cin;
+  const clearMarks=()=>W.querySelectorAll('.sy').forEach(x=>x.classList.remove('ok','miss'));
   const hear=()=>{
-    cancelPlay();$('#sHint').textContent='Escuchá cómo suena y seguí con la voz.';
-    playPattern(tl,{bd:c.cfg.bd,bpb:c.cfg.bpb,cin:c.cfg.cin,dots,words:W,metro:.06});
+    cancelPlay();meter.hidden=true;clearMarks();$('#sHint').textContent='Escuchá cómo suena y seguí con la voz.';
+    playPattern(tl,{bd,bpb,cin,dots,words:W,metro:.06});
   };
+  const menu=()=>acts(canMic?[['Escuchar de nuevo',hear],['Decirlo con el micrófono',mineMic,'primary'],['Decirlo sin micrófono',mine]]:[['Escuchar de nuevo',hear],['Decirlo yo',mine,'primary']]);
   const mine=()=>{
-    cancelPlay();$('#sHint').textContent='Ahora decilo vos, en voz alta. Solo suena el pulso.';
-    playPattern(tl,{bd:c.cfg.bd,bpb:c.cfg.bpb,cin:c.cfg.cin,dots,words:W,metro:.16,silent:true,done:()=>{
+    cancelPlay();meter.hidden=true;clearMarks();$('#sHint').textContent='Ahora decilo vos, en voz alta. Solo suena el pulso.';
+    playPattern(tl,{bd,bpb,cin,dots,words:W,metro:.16,silent:true,done:()=>{
       $('#sHint').textContent='¿Lo dijiste?';
       acts([['Lo dije',said,'primary'],['Otra vez',mine],['Escuchar de nuevo',hear]]);
     }});
@@ -1433,10 +1490,45 @@ EX.say=(c,it)=>{
   const said=()=>{
     cancelPlay();
     c.report({keys:tgt.keys,skill:'d',val:1,scored:false});
-    fb('Bien. Decirlo en voz alta ayuda al oído.','ok');
+    fb('A tiempo. Decirlo en voz alta ayuda al oído.','ok');
     c.ask([['Otra vez',mine]]);
   };
-  acts([['Escuchar de nuevo',hear],['Decirlo yo',mine,'primary']]);
+  const evalVoice=ons=>{
+    const exp=tl.evs.filter(e=>e.onset),expT=exp.map(e=>e.pos*bd),rests=tl.evs.filter(e=>!e.onset).map(e=>e.pos*bd);
+    if(!ons.length){
+      fb('No te escuché. Acercate al micrófono y decilo un poco más fuerte.','bad');
+      c.ask([['Probar otra vez',mineMic]]);return;
+    }
+    // un "sh" dicho en un silencio no cuenta como sonido de más
+    const taps=ons.filter(t=>{const dr=Math.min(9,...rests.map(r=>Math.abs(t-r))),de=Math.min(9,...expT.map(e=>Math.abs(t-e)));return !(dr<bd*.3&&dr<de)});
+    let mg=1;for(let q=1;q<exp.length;q++)mg=Math.min(mg,exp[q].pos-exp[q-1].pos);
+    const r=evalTaps(exp.map(e=>e.pos),taps,bd,Math.min(.4,Math.max(.2,mg*.5)));
+    const sy=sylTL(tgt.meas);
+    exp.forEach((e,k)=>sy.forEach((y,j)=>{if(y.ev===e.idx){const n=W.querySelector('.sy[data-k="'+j+'"]');if(n)n.classList.add(r.ok[k]?'ok':'miss')}}));
+    let msg='Te escuché '+r.hits+' de '+exp.length;
+    if(r.extra)msg+=' · '+r.extra+(r.extra>1?' sonidos':' sonido')+' de más';
+    if(r.devs.length>=3){const mean=r.devs.reduce((x,y)=>x+y,0)/r.devs.length/bd;if(mean>.12)msg+=' · un poco atrasado';else if(mean<-.12)msg+=' · un poco adelantado'}
+    fb(msg,r.acc>=.65?'ok':'bad');
+    c.report({keys:tgt.keys,skill:'d',val:r.acc,scored:true});
+    c.ask([['Probar otra vez',mineMic]]);
+  };
+  async function mineMic(){
+    cancelPlay();clearMarks();fb('');
+    const hint=$('#sHint');hint.textContent='Pidiendo el micrófono…';
+    try{await micOpen()}catch(e){
+      hint.textContent='No pude usar el micrófono. Revisá el permiso del navegador, o decilo igual sin micrófono.';
+      menu();return;
+    }
+    hint.textContent='Escuchá la cuenta y decilo en voz alta. El pulso se ve pero no suena, así no te tapa.';
+    const a=ac(),t0=a.currentTime+.2,s=t0+cin*bd,ons=[];
+    for(let i=0;i<cin;i++){click(t0+i*bd,i===0,.16);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
+    for(let b=0;b<tl.total;b++)atAudio(s+b*bd,()=>lightDot(dots,b%bpb));
+    meter.hidden=false;const bar=meter.querySelector('i');
+    micListen(t=>{if(t>=s-bd*.4&&t<=s+tl.total*bd+bd*.5)ons.push(t-s-save.offset/1000-.01)},lv=>{bar.style.width=Math.round(lv*100)+'%'});
+    acts([['Cancelar',()=>{cancelPlay();meter.hidden=true;hint.textContent='Escuchá cómo suena y seguí con la voz.';menu()}]]);
+    atAudio(s+tl.total*bd+bd*.6,()=>{micStop();lightDot(dots,-1);meter.hidden=true;evalVoice(ons)});
+  }
+  menu();
   later(hear,350);
 };
 
@@ -1521,8 +1613,8 @@ EX.read=(c,it)=>{
     b.onclick=()=>{
       cancelPlay();
       $('#rCh').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.r)x.classList.add('ok')});
-      if(o.right){b.classList.add('ok');fb('Correcto. Así se escribe lo que dijiste.','ok')}
-      else{b.classList.add('bad');fb('No era esa. La correcta quedó marcada en verde.','bad')}
+      if(o.right){b.classList.add('ok');fb('A tiempo. Así se escribe lo que dijiste.','ok')}
+      else{b.classList.add('bad');fb('Casi. La correcta quedó en verde.','bad')}
       if(A){
         $('#rNot').innerHTML=drawRhythm(tgt.meas,c.cfg.ts,{words:true});
       }else{
@@ -2768,7 +2860,7 @@ function renderTheoryWorlds(box){
 
 /* ---------- navegación y camino ---------- */
 const SCREENS=['sHome','sPlay','sOpts'];
-function show(id){stopAll();SCREENS.forEach(s=>{$('#'+s).hidden=s!==id});$('#app').classList.toggle('playing',id==='sPlay');window.scrollTo(0,0)}
+function show(id){stopAll();if(id!=='sPlay')micClose();SCREENS.forEach(s=>{$('#'+s).hidden=s!==id});$('#app').classList.toggle('playing',id==='sPlay');window.scrollTo(0,0)}
 function goHome(){show('sHome');renderHome()}
 const starsIc=n=>[1,2,3].map(k=>'<span class="'+(k<=n?'':'off')+'">'+ic('star')+'</span>').join('');
 const VOCAB=['q','qr','h','hr','w','wr','ee','sx','esx','sxe','hd','qde','edsx','qq','hq','syn','ere','ttt','tqt','ttq','bq','bh'];
@@ -2985,7 +3077,7 @@ function init(){
       persist();renderHome();$('#oCode').value='';$('#oMsg2').textContent='Avance cargado.';
     }catch(e){$('#oMsg2').textContent='Ese código no sirve. Copialo de nuevo completo.'}
   };
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelPlay()});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelPlay();micClose()}});
   renderHome();
   prepClef();prepBass();
 }
