@@ -256,6 +256,7 @@ input[type=range]{accent-color:var(--c4);min-height:44px;width:220px;max-width:1
 .tape i.tap{background:var(--wc);border-color:var(--wcd);color:#fff}
 .tape i.ok{background:var(--good);border-color:var(--good-d);color:#fff}
 .tape i.miss{background:transparent;border-color:var(--bad);color:var(--bad)}
+.priv{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px 14px}.priv summary{cursor:pointer;font:700 16px var(--f-body)}.priv p{margin:10px 0 0;font:500 15px/1.4 var(--f-body)}
 .howto{display:flex;flex-direction:column;gap:14px;margin:4px 0 6px}
 .tapedemo{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:14px 10px}
 .steps{margin:0;padding:0;list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:10px}
@@ -471,9 +472,9 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
           </div>
           <div class="card rev" id="hRev"></div>
           <div class="card who">
-            <label for="iName">Tu nombre</label>
-            <input id="iName" type="text" maxlength="24" placeholder="Para guardar tu avance" autocomplete="off">
-            <span class="small">El avance queda guardado en este dispositivo.</span>
+            <label for="iName">Tu apodo o nombre de pila</label>
+            <input id="iName" type="text" maxlength="24" placeholder="Sin apellido" autocomplete="off">
+            <span class="small">Todo queda guardado solo en este dispositivo. No se envía a ningún lado.</span>
           </div>
         </aside>
       </div>
@@ -518,6 +519,18 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
             <small id="oMsg"></small>
           </div>
           <div class="row">
+            <label>Privacidad y datos</label>
+            <details class="priv">
+              <summary>Qué guarda esta app y qué no</summary>
+              <p><b>Qué se guarda.</b> Tu apodo, tu avance, tus rachas y tus ajustes. Quedan solo en este dispositivo, dentro del navegador. No hay cuentas, no hay servidor propio y no se envía nada a nadie. La app no usa analíticas, publicidad ni servicios de terceros.</p>
+              <p><b>Micrófono.</b> Si lo activás en los ejercicios de decir, la app escucha en el momento para marcar cuándo dijiste cada sílaba. No graba ni guarda audio. Podés usar la app sin micrófono.</p>
+              <p><b>Alojamiento.</b> El sitio está en Vercel, que como cualquier alojamiento web puede registrar datos técnicos de acceso, por ejemplo la dirección IP. La app no los usa.</p>
+              <p><b>Borrar todo.</b> Tocá «Borrar el avance» acá en Opciones, o limpiá los datos del sitio en el navegador.</p>
+              <p><b>Con menores.</b> Pedí a los chicos que usen un apodo o su nombre de pila, sin apellido ni otros datos personales.</p>
+              <p><b>Responsable y contacto.</b> Ale Mambrin, docente, Choele Choel, Río Negro. Para consultas o para avisar de un error, escribile por TikTok a @ale_mambrin y contá qué ejercicio, qué dispositivo y qué pasó.</p>
+            </details>
+          </div>
+          <div class="row">
             <label for="oCode">Pasar mi avance a otro dispositivo</label>
             <div class="actions" style="margin-top:0"><button class="btn" id="oExp" type="button">Copiar mi código</button></div>
             <input id="oCode" type="text" placeholder="Pegá acá un código para cargarlo" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -528,7 +541,7 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
       </div>
     </section>
   </main>
-  <footer class="foot">Hablá música · hecho por Ale Mambrin para Lenguaje Musical, Orquesta del Bicentenario de Choele Choel</footer>
+  <footer class="foot">Hablá música · hecho por Ale Mambrin para Lenguaje Musical, Orquesta del Bicentenario de Choele Choel · Versión <span id="appVer"></span></footer>
 </div>
 <script>
 (function(){
@@ -543,8 +556,30 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 
 /* ---------- progreso guardado ---------- */
 const KEY='pulsoColectivo.v2';
+const APP_VER='1.2';
 let save={name:'',done:{},vm:{},days:[],nstars:{},exam:{},offset:0,vol:80,unlockAll:false};
-try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)save=Object.assign(save,s)}catch(e){}
+/* Toda entrada externa (memoria del navegador o código importado) se reconstruye campo por campo: solo pasan claves y tipos conocidos */
+function cleanSave(o){
+  if(!o||typeof o!=='object'||Array.isArray(o))return null;
+  const num=(v,lo,hi,d)=>{v=+v;return isFinite(v)?Math.min(hi,Math.max(lo,v)):d};
+  const map=(src,kre,fn,max)=>{const r={};if(!src||typeof src!=='object'||Array.isArray(src))return r;let n=0;for(const k of Object.keys(src)){if(n>=(max||300))break;if(!kre.test(k))continue;const v=fn(src[k]);if(v!==undefined){r[k]=v;n++}}return r};
+  const o2={
+    name:typeof o.name==='string'?o.name.replace(/[\u0000-\u001f<>&"]/g,'').slice(0,24):'',
+    done:map(o.done,/^[A-Za-z0-9.\-]{1,12}$/,v=>Math.round(num(v,0,3,0))),
+    nstars:map(o.nstars,/^[A-Za-z0-9.\-]{1,12}$/,v=>Math.round(num(v,0,3,0))),
+    exam:map(o.exam,/^[A-Za-z0-9.\-]{1,12}$/,v=>Math.round(num(v,0,3,0))),
+    vm:map(o.vm,/^[a-z0-9]{1,8}$/,v=>{if(!v||typeof v!=='object')return;return{e:num(v.e,-1,100,-1),d:num(v.d,-1,100,-1),t:num(v.t,-1,100,-1),l:num(v.l,-1,100,-1),c:num(v.c,-1,100,-1),h:num(v.h,.05,400,1),last:num(v.last,0,Date.now()+864e5,0)}}),
+    tq:map(o.tq,/^[A-Za-z0-9]{1,24}$/,v=>Array.isArray(v)?[Math.round(num(v[0],0,99999,0)),Math.round(num(v[1],0,99999,0))]:undefined),
+    days:Array.isArray(o.days)?o.days.filter(x=>typeof x==='string'&&/^\d{4}-\d{1,2}-\d{1,2}$/.test(x)).slice(-150):[],
+    offset:Math.round(num(o.offset,-300,300,0)),
+    vol:Math.round(num(o.vol,20,100,80)),
+    unlockAll:o.unlockAll===true
+  };
+  if(o.micLat!=null)o2.micLat=num(o.micLat,0,.6,.12);
+  if(o.track==='T'||o.track==='R')o2.track=o.track;
+  return o2;
+}
+try{const s=cleanSave(JSON.parse(localStorage.getItem(KEY)||'null'));if(s)save=Object.assign(save,s)}catch(e){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
 
 /* ---------- figuras, silencios y fragmentos ---------- */
@@ -3051,7 +3086,7 @@ function renderHome(){
   const wm=allDone?'cheer':'happy';
   $('#hWelcome').className='card welcome wc'+(allDone?4:wcFor(LESSONS[nextIdx].w));
   $('#hWelcome').innerHTML=mascot(wm,112,'hop')+'<div class="txt"><h1>'+
-    (nm?'Hola, '+nm+'. ':'')+(first?'Aprendé el ritmo como se aprende un idioma.':allDone?'Recorriste todo el camino de ritmo.':'Seguimos con el idioma del ritmo.')+
+    (nm?'Hola, '+esc(nm)+'. ':'')+(first?'Aprendé el ritmo como se aprende un idioma.':allDone?'Recorriste todo el camino de ritmo.':'Seguimos con el idioma del ritmo.')+
     '</h1><p>'+(first?'Escuchás, decís, tocás, leés y conversás con el ritmo. Hay dos recorridos: Ritmo y Notas y teoría. Si ya sabés, cada mundo tiene un examen para saltearlo.':allDone?'Repasá lo que quedó flojo o probá el mundo de las notas.':'Tu próxima lección: '+LESSONS[nextIdx].title+'.')+'</p><div class="acts"></div></div>';
   const acts=$('#hWelcome .acts');
   const cont=document.createElement('button');cont.type='button';cont.className='btn primary big';
@@ -3151,25 +3186,35 @@ function init(){
     $('#oMsg').textContent=save.unlockAll?'Todas las lecciones están abiertas.':'Las lecciones se abren según el avance.';
   };
   $('#oReset').onclick=()=>{
-    if(!resetArmed){resetArmed=true;$('#oReset').textContent='Tocá de nuevo para confirmar';$('#oMsg').textContent='Se borran las lecciones, el vocabulario y la racha de este dispositivo.';return}
-    save.done={};save.vm={};save.days=[];save.nstars={};save.exam={};save.tq={};persist();renderHome();resetArmed=false;$('#oReset').textContent='Borrar el avance';$('#oMsg').textContent='Avance borrado.';
+    if(!resetArmed){resetArmed=true;$('#oReset').textContent='Tocá de nuevo para confirmar';$('#oMsg').textContent='Se borran el nombre, las lecciones, el vocabulario y la racha de este dispositivo. No se puede deshacer.';return}
+    save.name='';save.done={};save.vm={};save.days=[];save.nstars={};save.exam={};save.tq={};delete save.micLat;persist();renderHome();resetArmed=false;$('#oReset').textContent='Borrar el avance';$('#oMsg').textContent='Avance borrado.';
   };
   /* pasar el avance a otro dispositivo */
   $('#oExp').onclick=async()=>{
-    const code=btoa(unescape(encodeURIComponent(JSON.stringify(save))));
+    const code='HM1.'+btoa(unescape(encodeURIComponent(JSON.stringify(save))));
     $('#oCode').value=code;
     try{await navigator.clipboard.writeText(code);$('#oMsg2').textContent='Código copiado. Pegalo en el otro dispositivo, en Opciones, y tocá Cargar.'}
     catch(e){$('#oCode').focus();$('#oCode').select();$('#oMsg2').textContent='Copiá el código que aparece en el cuadro y pegalo en el otro dispositivo.'}
   };
+  let impArmed=false;
+  const disarmImp=()=>{impArmed=false;$('#oImp').textContent='Cargar el código'};
+  $('#oCode').addEventListener('input',disarmImp);
   $('#oImp').onclick=()=>{
     try{
-      const o=JSON.parse(decodeURIComponent(escape(atob($('#oCode').value.trim()))));
-      if(!o||typeof o!=='object'||typeof o.done!=='object')throw 0;
-      Object.assign(save,{done:{},vm:{},days:[],nstars:{},exam:{},tq:{}},o);
+      let raw=$('#oCode').value.trim();
+      if(!raw||raw.length>80000)throw 0;
+      if(raw.indexOf('HM1.')===0)raw=raw.slice(4);
+      const o=cleanSave(JSON.parse(decodeURIComponent(escape(atob(raw)))));
+      if(!o||!Object.keys(o.done).length&&!Object.keys(o.vm).length&&!Object.keys(o.nstars).length&&!o.days.length)throw 0;
+      const hasOwn=Object.keys(save.done).length||Object.keys(save.vm).length||save.days.length;
+      if(hasOwn&&!impArmed){impArmed=true;$('#oImp').textContent='Tocá de nuevo para reemplazar';$('#oMsg2').textContent='Este código reemplaza el avance que hay en este dispositivo.';return}
+      disarmImp();
+      Object.assign(save,{name:'',done:{},vm:{},days:[],nstars:{},exam:{},tq:{}},o);
       persist();renderHome();$('#oCode').value='';$('#oMsg2').textContent='Avance cargado.';
-    }catch(e){$('#oMsg2').textContent='Ese código no sirve. Copialo de nuevo completo.'}
+    }catch(e){disarmImp();$('#oMsg2').textContent='Ese código no sirve. Copialo de nuevo completo, sin cortar ni agregar nada.'}
   };
   document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelPlay();micClose()}});
+  const av=$('#appVer');if(av)av.textContent=APP_VER;
   renderHome();
   prepClef();prepBass();
 }
