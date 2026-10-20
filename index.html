@@ -243,6 +243,24 @@ input[type=range]{accent-color:var(--c4);min-height:44px;width:220px;max-width:1
 .beats i.on{background:var(--gold);border-color:var(--gold-d);transform:scale(1.3)}
 .beats.big{gap:18px}
 .beats.big i{width:38px;height:38px}
+.tape{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;justify-content:center;margin:4px 0}
+.tgrp{display:flex;flex-direction:column;align-items:center;gap:6px}
+.tgrp.cnt{flex-basis:100%}
+.tlab{font:700 13px/1.1 var(--f-body);color:var(--muted);text-align:center}
+.tgrp.hand .tlab{color:var(--wcd)}
+.trow{display:flex;gap:6px}
+.tape i{width:30px;height:30px;border-radius:50%;border:3px solid var(--line2);background:var(--surface);display:grid;place-items:center;font:800 14px/1 var(--f-display);font-style:normal;color:var(--muted);transition:background .06s,transform .06s,border-color .06s}
+.tgrp.cnt i{border-style:dashed}
+.tape i.past{border-color:var(--line);color:var(--ink)}
+.tape i.on{background:var(--gold);border-color:var(--gold-d);color:#1d2430;transform:scale(1.2);border-style:solid}
+.tape i.tap{background:var(--wc);border-color:var(--wcd);color:#fff}
+.tape i.ok{background:var(--good);border-color:var(--good-d);color:#fff}
+.tape i.miss{background:transparent;border-color:var(--bad);color:var(--bad)}
+.howto{display:flex;flex-direction:column;gap:14px;margin:4px 0 6px}
+.tapedemo{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:14px 10px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;font:600 18px/1.3 var(--f-body)}
+.steps li::before{content:counter(st);flex:none;width:28px;height:28px;border-radius:50%;background:var(--wc);color:#fff;display:grid;place-items:center;font:800 15px var(--f-display);margin-top:1px}
 .notation{width:100%;overflow-x:auto;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:8px 6px}
 .notation svg{display:block;width:100%;height:auto;max-height:200px;min-width:300px}
 .big-fig{max-width:260px;margin-inline:auto}
@@ -856,18 +874,18 @@ function cancelPlay(){TM.forEach(clearTimeout);TM=[];cancelAnimationFrame(RAF);R
 function stopAll(){cancelPlay();if(KEYS){document.removeEventListener('keydown',KEYS);KEYS=null}}
 function onKeys(fn){if(KEYS)document.removeEventListener('keydown',KEYS);KEYS=fn;document.addEventListener('keydown',fn)}
 const dotsHTML=(n,cls)=>'<div class="beats '+(cls||'')+'" aria-hidden="true">'+'<i></i>'.repeat(n)+'</div>';
-const lightDot=(root,i)=>{if(!root)return;root.querySelectorAll('i').forEach((x,k)=>x.classList.toggle('on',k===i))};
+const lightDot=(root,i,g)=>{if(!root)return;const n=root.dataset.tape&&g!==undefined?g:i;root.querySelectorAll('i').forEach((x,k)=>{x.classList.toggle('on',k===n);x.classList.toggle('past',n>=0&&k<n)})};
 
 /* reproduce un patrón: cuenta previa, pulso suave y notas sostenidas */
 function playPattern(tl,o){
   const a=ac(),t0=a.currentTime+.2,s=t0+o.cin*o.bd;
   for(let i=0;i<o.cin;i++){
     click(t0+i*o.bd,i===0,.14);
-    if(o.dots)atAudio(t0+i*o.bd,()=>lightDot(o.dots,i%o.bpb));
+    if(o.dots)atAudio(t0+i*o.bd,()=>lightDot(o.dots,i%o.bpb,i));
   }
   for(let b=0;b<tl.total;b++){
     click(s+b*o.bd,b%o.bpb===0,o.metro==null?.05:o.metro);
-    if(o.dots)atAudio(s+b*o.bd,()=>lightDot(o.dots,b%o.bpb));
+    if(o.dots)atAudio(s+b*o.bd,()=>lightDot(o.dots,b%o.bpb,o.cin+b));
   }
   tl.evs.forEach(e=>{
     if(e.onset&&!o.silent)sustain(s+e.pos*o.bd,e.ad*o.bd,392);
@@ -1053,7 +1071,7 @@ const isNoteUnlocked=i=>save.unlockAll||i===0||(save.nstars[NOTES[i-1].id]>0);
 const SK=[['e','Escuchar'],['d','Decir'],['t','Tocar'],['l','Leer'],['c','Conversar']];
 const STAGE_NAME={pulso:'Pulso',escuchar:'Escuchar',decir:'Decir',tocar:'Tocar',leer:'Leer',conversar:'Conversar',repaso:'Repaso',intro:'Palabras nuevas',examen:'Examen'};
 const STAGE_INTRO={
-  pulso:'El pulso es el latido de la música. Escuchalo y seguilo con la pantalla o la barra espaciadora.',
+  pulso:'El pulso es el latido de la música. Vas a seguirlo con las manos, tocando en la pantalla o con la barra espaciadora.',
   escuchar:'Primero el oído. Va a sonar un ritmo, sin partitura. Elegí cómo se dice.',
   decir:'Ahora hablá. Cada ritmo tiene su palabra. Decila en voz alta siguiendo el pulso.',
   tocar:'Ahora las manos. Escuchá el ritmo y repetilo tocando.',
@@ -1195,13 +1213,21 @@ function tapMsg(r,total,bd){
 function bindPad(pad,R){
   const hit=()=>{
     if(!R.rec)return;
-    const a=ac();R.taps.push(a.currentTime-save.offset/1000-R.start);
+    const a=ac();R.taps.push(a.currentTime-save.offset/1000-R.start);if(R.onhit)R.onhit(R.taps[R.taps.length-1]);
     tone(700,a.currentTime,.07,'triangle',.25);
     pad.classList.add('hit');later(()=>pad.classList.remove('hit'),90);
   };
   pad.addEventListener('pointerdown',e=>{e.preventDefault();hit()});
   onKeys(e=>{if(e.code==='Space'&&R.rec){e.preventDefault();if(!e.repeat)hit()}});
 }
+/* línea de tiempo: cuenta (solo escuchás) y compases (tocás); marca cuándo toca y cuántas veces */
+function tapeHTML(cin,total,bpb,labels){
+  const bars=Math.max(1,Math.round(total/bpb));
+  let h='<div class="tape" data-tape="1" aria-hidden="true"><div class="tgrp cnt"><span class="tlab">Escuchá la cuenta</span><div class="trow">'+Array.from({length:cin},(_,k)=>'<i>'+(k+1)+'</i>').join('')+'</div></div>';
+  for(let m=0;m<bars;m++)h+='<div class="tgrp hand"><span class="tlab">'+((labels&&labels[m])||'Tocá')+'</span><div class="trow">'+Array.from({length:bpb},(_,k)=>'<i>'+(k+1)+'</i>').join('')+'</div></div>';
+  return h+'</div>';
+}
+const tapeSlot=(tape,cin,k,cls)=>{const x=tape&&tape.querySelectorAll('i')[cin+k];if(x)x.classList.add(cls)};
 const padHTML='<button type="button" class="pad" disabled>'+ic('voy')+'<span>Tocá acá o usá la barra espaciadora</span></button>';
 const padText=(pad,txt)=>{pad.innerHTML=ic('voy')+'<span>'+txt+'</span>'};
 
@@ -1252,7 +1278,7 @@ function planFor(L){
   const add=(stage,kind,extra)=>plan.push(Object.assign({stage,kind},extra||{}));
   if(L.focus&&L.focus.length)add('intro','intro');
   L.stages.forEach(s=>{
-    if(s==='pulso'){add('pulso','pulse');add('pulso','pulse')}
+    if(s==='pulso'){add('pulso','pulse',{first:true});add('pulso','pulse')}
     if(s==='escuchar'){for(let i=0;i<3;i++)add('escuchar','hear')}
     if(s==='decir'){for(let i=0;i<2;i++)add('decir','say')}
     if(s==='tocar'){for(let i=0;i<4;i++)add('tocar','tap',{words:i<2})}
@@ -1310,8 +1336,16 @@ function advance(){
   if(it.intro&&it.kind!=='intro')showStageIntro(it,go);else go();
 }
 function showStageIntro(it,go){
+  let extra='';
+  if(it.stage==='pulso'){
+    const cfg=SES.cfg,n=cfg.bpb;
+    extra='<div class="howto"><div class="tapedemo">'+tapeHTML(cfg.cin,n*2,n,['con clic','sin clic'])+'</div>'
+      +'<ol class="steps"><li><span><b>Escuchá la cuenta.</b> Suenan '+cfg.cin+' clics. No toques todavía.</span></li>'
+      +'<li><span><b>Tocá '+n+' veces.</b> Una en cada clic, siguiendo el pulso.</span></li>'
+      +'<li><span><b>Tocá '+n+' veces más.</b> Ahora el clic se apaga y seguís vos solo.</span></li></ol></div>';
+  }
   $('#pStage').innerHTML='<div class="intro">'+mascot(it.stage==='tocar'?'cheer':it.stage==='escuchar'?'think':'happy',92,'hop')
-    +'<div class="txt"><span class="stg">'+ic(STAGE_ICON[it.stage]||'star')+STAGE_NAME[it.stage]+'</span><p>'+it.intro+'</p></div></div>';
+    +'<div class="txt"><span class="stg">'+ic(STAGE_ICON[it.stage]||'star')+STAGE_NAME[it.stage]+'</span><p>'+it.intro+'</p></div></div>'+extra;
   acts([['Dale',go,'primary big']]);
 }
 function ctxFor(it){
@@ -1582,32 +1616,48 @@ function runTap(c,it,pulse){
     tgt={meas:[m(),m()],keys:[]};
   }else tgt=c.pat();
   const tl=timeline(tgt.meas),R={rec:false,taps:[],start:0,busy:false,done:false};
-  const showWords=!pulse&&it.words;
-  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">'+(pulse?'Escuchá la cuenta y seguí el pulso con los toques. Los clics se apagan a la mitad: seguí solo.':(showWords?'Mirá la palabra, escuchá el ritmo y repetilo tocando.':'Esta vez sin ayuda visual. Escuchá y repetí de memoria.'))+'</div></div>'
-    +dotsHTML(bpb)
-    +(showWords?'<div class="words big" id="tW">'+wordsHTML(tgt.meas)+'</div>':'<div class="mask" id="tM">'+(pulse?'Pulso':'Ritmo oculto')+'</div>')
+  const showWords=!pulse&&it.words,guided=pulse&&!!it.first;
+  const nBars=Math.max(1,Math.round(tl.total/bpb));
+  const labels=pulse?(guided?['Tocá con el clic','Tocá con el clic']:['Tocá con el clic','Tocá sin clic']):(nBars>1?['Repetí el ritmo'].concat(Array(nBars-1).fill('')):['Repetí el ritmo']);
+  const hint0=pulse?(guided?'Escuchá la cuenta de '+cin+'. Después tocá una vez en cada clic, '+tl.total+' veces en total.':'Escuchá la cuenta. Tocá '+bpb+' veces con el clic y otras '+bpb+' sin clic: seguí solo.')
+    :(showWords?'Mirá la palabra, escuchá el ritmo y repetilo tocando.':'Esta vez sin ayuda visual. Escuchá y repetí de memoria.');
+  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble" id="tHint">'+hint0+'</div></div>'
+    +tapeHTML(cin,tl.total,bpb,labels)
+    +(showWords?'<div class="words big" id="tW">'+wordsHTML(tgt.meas)+'</div>':pulse?'':'<div class="mask" id="tM">Ritmo oculto</div>')
     +padHTML;
-  const dots=$('.beats',st),pad=$('.pad',st),W=$('#tW');
+  const dots=$('.tape',st),pad=$('.pad',st),W=$('#tW'),hint=$('#tHint');
+  const say=t=>{hint.textContent=t};
+  padText(pad,pulse?'Primero escuchá':'Tocá acá o usá la barra espaciadora');
+  const clearTape=()=>dots.querySelectorAll('i').forEach(x=>x.classList.remove('tap','ok','miss'));
+  R.onhit=rel=>{
+    if(!pulse)return;
+    const k=Math.round(rel/bd);
+    if(k>=0&&k<tl.total){tapeSlot(dots,cin,k,'tap');padText(pad,'¡Tocá! '+Math.min(R.taps.length,tl.total)+' de '+tl.total)}
+  };
   bindPad(pad,R);
   const listen=()=>{
-    cancelPlay();clearMarks();R.rec=false;pad.disabled=true;
+    cancelPlay();clearMarks();clearTape();R.rec=false;pad.disabled=true;padText(pad,pulse?'Escuchá. Todavía no toques':'Escuchá');
+    say(pulse?'Así suena: la cuenta y después el pulso. Todavía no toques.':hint0);
     if(pulse){
       const t0=ac().currentTime+.2;
-      for(let i=0;i<cin+bpb*2;i++){click(t0+i*bd,i%bpb===0,.22);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
-      atAudio(t0+(cin+bpb*2)*bd,()=>{lightDot(dots,-1)});
+      for(let i=0;i<cin+bpb*2;i++){click(t0+i*bd,i%bpb===0,.22);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb,i))}
+      atAudio(t0+(cin+bpb*2)*bd,()=>{lightDot(dots,-1);padText(pad,'Primero escuchá');say('Ahora te toca a vos: apretá «Tocar yo».')});
       return;
     }
     playPattern(tl,{bd,bpb,cin,dots,words:W,metro:.06});
   };
   function clearMarks(){if(W)W.querySelectorAll('.sy').forEach(x=>x.classList.remove('ok','miss'))}
   const turn=()=>{
-    R.done=false;cancelPlay();clearMarks();R.taps=[];R.rec=false;
+    R.done=false;cancelPlay();clearMarks();clearTape();R.taps=[];R.rec=false;
     const a=ac(),t0=a.currentTime+.2,s=t0+cin*bd;R.start=s;
-    for(let i=0;i<cin;i++){click(t0+i*bd,i===0,.16);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
+    padText(pad,'Escuchá la cuenta…');say('Escuchá la cuenta: todavía no toques.');
+    for(let i=0;i<cin;i++){click(t0+i*bd,i===0,.16);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb,i))}
     if(pulse)for(let b=0;b<bpb;b++)click(s+b*bd,b===0,.22);
-    for(let b=0;b<tl.total;b++)atAudio(s+b*bd,()=>lightDot(dots,b%bpb));
-    atAudio(s-bd*.55,()=>{R.rec=true;pad.disabled=false});
-    atAudio(s+tl.total*bd+bd*.6,()=>{R.rec=false;pad.disabled=true;lightDot(dots,-1);evaluate()});
+    if(pulse&&guided)for(let b=bpb;b<tl.total;b++)click(s+b*bd,b%bpb===0,.22);
+    for(let b=0;b<tl.total;b++)atAudio(s+b*bd,()=>lightDot(dots,b%bpb,cin+b));
+    atAudio(s-bd*.55,()=>{R.rec=true;pad.disabled=false;padText(pad,pulse?'¡Tocá! 0 de '+tl.total:'¡Tocá!');say(pulse?'¡Ahora vos! Un toque en cada clic.':'¡Ahora vos! Repetí el ritmo.')});
+    if(pulse&&!guided)atAudio(s+bpb*bd-bd*.5,()=>say('Sin clic: seguí solo, con el mismo pulso.'));
+    atAudio(s+tl.total*bd+bd*.6,()=>{R.rec=false;pad.disabled=true;lightDot(dots,-1);padText(pad,pulse?'Primero escuchá':'Tocá acá o usá la barra espaciadora');evaluate()});
   };
   function evaluate(){
     const exp=tl.evs.filter(e=>e.onset);
@@ -1615,6 +1665,7 @@ function runTap(c,it,pulse){
     const r=evalTaps(exp.map(e=>e.pos),R.taps,bd,Math.min(.32,Math.max(.12,mg*.45)));
     R.done=true;
     const msg=tapMsg(r,exp.length,bd);
+    if(pulse){exp.forEach((e,k)=>{const x=dots.querySelectorAll('i')[cin+Math.round(e.pos)];if(x){x.classList.remove('tap');x.classList.add(r.ok[k]?'ok':'miss')}})}
     if(!pulse){
       const sy=sylTL(tgt.meas);
       if(!W){
@@ -1623,9 +1674,10 @@ function runTap(c,it,pulse){
       const WW=$('#tW');
       exp.forEach((e,k)=>sy.forEach((y,j)=>{if(y.ev===e.idx){const n=WW.querySelector('.sy[data-k="'+j+'"]');if(n)n.classList.add(r.ok[k]?'ok':'miss')}}));
     }
+    say(r.acc>=.7?'Muy bien.':'Probá otra vez: escuchá primero y seguí el clic.');
     fb(msg,r.acc>=.7?'ok':'bad');
     c.report({keys:tgt.keys,skill:'t',val:r.acc,scored:true});
-    c.ask([['Probar otra vez',()=>{R.done=false;fb('');if(!pulse){const w=$('#tW');if(w)w.querySelectorAll('.sy').forEach(x=>x.classList.remove('ok','miss'))}acts([['Escuchar',listen,'primary'],['Tocar yo',turn]])}]]);
+    c.ask([['Probar otra vez',()=>{R.done=false;fb('');clearTape();say(hint0);if(!pulse){const w=$('#tW');if(w)w.querySelectorAll('.sy').forEach(x=>x.classList.remove('ok','miss'))}acts([['Escuchar',listen,'primary'],['Tocar yo',turn]])}]]);
   }
   acts([['Escuchar',listen,'primary'],['Tocar yo',turn]]);
   if(!pulse)later(listen,350);
