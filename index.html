@@ -1199,16 +1199,18 @@ const padText=(pad,txt)=>{pad.innerHTML=ic('voy')+'<span>'+txt+'</span>'};
 const MIC={stream:null,an:null,iv:0};
 const micOK=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.isSecureContext!==false);
 function onsetDet(){
-  let floor=null,hist=[],last=-9,n=0;
+  let floor=null,hist=[],last=-9,n=0,armed=true,pk=-99;
   return function(db,t){
     n++;
     if(floor===null)floor=db;
     hist.push(db);if(hist.length>12)hist.shift();
     if(db<floor+5)floor+=(db-floor)*(db<floor?.2:.03);
     let ev=false;
-    if(n>12&&db>floor+10&&db>-55){
+    /* tras un sonido, hay que bajar antes de aceptar otro: así una sílaba larga no cuenta dos veces */
+    if(!armed){if(db>pk)pk=db;if(db<pk-5||db<floor+6)armed=true}
+    if(armed&&n>12&&db>floor+11&&db>-55){
       const base=Math.min(...hist.slice(0,-1));
-      if(db-base>4.5&&t-last>.09){ev=true;last=t}
+      if(db-base>6&&t-last>.14){ev=true;last=t;armed=false;pk=db}
     }
     return{ev,floor};
   };
@@ -1480,7 +1482,7 @@ function voiceMatch(ons,s,expPos,restPos,bd,L,wide,tol){
   const rel=ons.map(t=>t-s-.01);
   let best=null;
   for(let d=wide?-.12:-.06;d<=(wide?.4:.12)+1e-9;d+=.01){
-    let taps=rel.map(x=>x-L-d);
+    let taps=rel.map(x=>x-L-d).filter((x,i,a)=>i===0||x-a[i-1]>.2);
     // un "sh" dicho en un silencio no cuenta como sonido de más
     taps=taps.filter(t=>{const dr=Math.min(9,...restPos.map(p=>Math.abs(t-p*bd))),de=Math.min(9,...expPos.map(p=>Math.abs(t-p*bd)));return !(dr<bd*.3&&dr<de)});
     const r=evalTaps(expPos,taps,bd,tol),sc=r.hits*100-r.extra*10-Math.abs(d)*10;
@@ -1519,7 +1521,7 @@ EX.say=(c,it)=>{
     const exp=tl.evs.filter(e=>e.onset),expPos=exp.map(e=>e.pos),rests=tl.evs.filter(e=>!e.onset).map(e=>e.pos);
     const Lm=leakLatency(all,clicks);
     // se descartan los sonidos de la cuenta previa (los clics que entran al micrófono)
-    const lastC=clicks[clicks.length-1],guard=Math.min((Lm!=null?Lm+.2:.35),bd*.8);
+    const lastC=clicks[clicks.length-1],guard=Math.min((Lm!=null?Lm+.3:.4),bd*.85);
     const ons=all.filter(t=>t>=lastC+guard);
     if(!ons.length){
       fb('No te escuché. Acercate al micrófono y decilo un poco más fuerte.','bad');
@@ -1529,11 +1531,13 @@ EX.say=(c,it)=>{
     let mg=1;for(let q=1;q<exp.length;q++)mg=Math.min(mg,exp[q].pos-exp[q-1].pos);
     const m=voiceMatch(ons,s,expPos,rests,bd,L0,Lm==null,Math.min(.4,Math.max(.2,mg*.5))),r=m.r;
     if(r.hits>=Math.ceil(exp.length/2)){const lat=Math.max(0,Math.min(.6,m.lat));save.micLat=save.micLat==null?lat:save.micLat*.5+lat*.5;persist()}
+    r.acc=Math.max(0,r.hits-.5*r.extra)/exp.length;
     const sy=sylTL(tgt.meas);
     exp.forEach((e,k)=>sy.forEach((y,j)=>{if(y.ev===e.idx){const n=W.querySelector('.sy[data-k="'+j+'"]');if(n)n.classList.add(r.ok[k]?'ok':'miss')}}));
     let msg='Te escuché '+r.hits+' de '+exp.length;
     if(r.extra)msg+=' · '+r.extra+(r.extra>1?' sonidos':' sonido')+' de más';
-    fb(msg,r.acc>=.65?'ok':'bad');
+    fb(msg,r.acc>=.6?'ok':'bad');
+    $('#sHint').textContent='Oí '+ons.length+' sonidos'+(ons.length<=14?' en: '+ons.map(t=>(t-s-L0-m.d).toFixed(2)).join(' · ')+' s':'')+'. Esperados: '+expPos.map(p=>(p*bd).toFixed(2)).join(' · ')+' s.';
     c.report({keys:tgt.keys,skill:'d',val:r.acc,scored:true});
     c.ask([['Probar otra vez',mineMic]]);
   };
