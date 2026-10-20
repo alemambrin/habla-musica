@@ -1321,7 +1321,7 @@ function ctxFor(it){
     pat(extra){return genPat(Object.assign({ts:cfg.ts,pool:cfg.pool,measures:cfg.measures,tieBar:cfg.tieBar,must:it.must||(cfg.focus.length?cfg.focus:null)},extra||{}))},
     report(r){
       (r.keys||[]).forEach(k=>{vmUpdate(k,r.skill,r.val);S.touched.add(k)});
-      if(r.scored){S.scores.push(r.val);if(r.val<.7)(r.keys||[]).forEach(k=>S.fails[k]=(S.fails[k]||0)+1)}
+      if(r.scored){S.sIdx=S.sIdx||{};if(S.sIdx[S.i]!==undefined)S.scores[S.sIdx[S.i]]=r.val;else{S.sIdx[S.i]=S.scores.length;S.scores.push(r.val)}if(r.val<.7)(r.keys||[]).forEach(k=>S.fails[k]=(S.fails[k]||0)+1)}
       markToday();persist();
     },
     ask(extra){
@@ -2784,6 +2784,7 @@ function thAsk(gid){
       if(o.right){b.classList.add('ok');fb('Correcto. '+(q.explain||''),'ok')}
       else{b.classList.add('bad');fb('La respuesta era «'+opts.find(x=>x.right).t+'». '+(q.explain||''),'bad')}
       if(!(S.retry&&S.retry[S.i])){S.cnt++;if(o.right)S.ok++;else S.fails[gid]=(S.fails[gid]||0)+1}
+      else if(o.right)S.ok+=.5; /* la pregunta que fallaste y repetida bien recupera la mitad */
       if(!o.right&&!S.exam&&S.extra<4){S.extra++;S.queue.push(gid);S.retry=S.retry||{};S.retry[S.queue.length-1]=true}
       try{save.tq=save.tq||{};const r=save.tq[gid]||[0,0];r[1]++;if(o.right)r[0]++;save.tq[gid]=r;markToday();persist()}catch(e){}
       const last=S.i+1>=S.queue.length;
@@ -2815,7 +2816,7 @@ function thEnd(){
     +(pass?'<div class="stars" aria-label="'+stars+' de 3 estrellas">'+[1,2,3].map(n=>'<span class="'+(n<=stars?'':'off')+'">'+ic('star')+'</span>').join('')+'</div>':'')
     +'<p class="hint">'+line+'</p>'
     +'<div class="tiles"><div class="tile" style="--tc:var(--'+(pass?'c1':'c3')+')"><b>Precisión</b><span>'+Math.round(pct)+'%</span></div>'
-    +'<div class="tile" style="--tc:var(--c2)"><b>Preguntas</b><span>'+S.ok+'/'+S.cnt+'</span></div>'
+    +'<div class="tile" style="--tc:var(--c2)"><b>Preguntas</b><span>'+(Math.round(S.ok*2)/2)+'/'+S.cnt+'</span></div>'
     +'<div class="tile" style="--tc:var(--gold-d)"><b>Estrellas</b><span>'+(pass?stars:0)+'</span></div></div></div>';
   if(pass&&pct>=70){confetti();jingle()}
   const list=[];
