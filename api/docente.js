@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
     if (!teacherOk(req)) {
       await new Promise(r => setTimeout(r, 700));
       if (await limited('hm:tf:' + ip(req), 12, 900)) return send(res, 429, { ok: false });
-      return send(res, 401, { ok: false });
+      return send(res, 401, { ok: false, cfg: (process.env.TEACHER_KEY || '').length >= 12 });
     }
     if (req.method === 'GET') {
       const g = String(req.query.g || '').toUpperCase();
