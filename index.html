@@ -257,6 +257,19 @@ input[type=range]{accent-color:var(--c4);min-height:44px;width:220px;max-width:1
 .tape i.ok{background:var(--good);border-color:var(--good-d);color:#fff}
 .tape i.miss{background:transparent;border-color:var(--bad);color:var(--bad)}
 .priv{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px 14px}.priv summary{cursor:pointer;font:700 16px var(--f-body)}.priv p{margin:10px 0 0;font:500 15px/1.4 var(--f-body)}
+.welcome-ov{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.welcome-ov[hidden]{display:none}
+.welcome-box{width:100%;max-width:440px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.welcome-box #wMas{align-self:center}
+.welcome-box h1{margin:0 0 4px;font:800 28px/1.15 var(--f-display);text-align:center}
+.welcome-box label{font-weight:800;font-size:15px}
+.welcome-box [hidden]{display:none!important}
+.welcome-box .wopt{font-weight:600;color:var(--muted)}
+.welcome-box input[type=text]{min-height:52px;width:100%;font-size:18px;padding:0 14px}
+.welcome-box .wmsg{margin:0;min-height:22px;color:var(--ink);font:700 15px var(--f-body)}
+.welcome-box .actions{display:flex;gap:10px;flex-wrap:wrap}
+.welcome-box .btn.primary{flex:1;min-height:54px;font-size:18px}
+body.modal{overflow:hidden}
 .howto{display:flex;flex-direction:column;gap:14px;margin:4px 0 6px}
 .tapedemo{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:14px 10px}
 .steps{margin:0;padding:0;list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:10px}
@@ -474,7 +487,8 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
           <div class="card who">
             <label for="iName">Tu apodo o nombre de pila</label>
             <input id="iName" type="text" maxlength="24" placeholder="Sin apellido" autocomplete="off">
-            <span class="small">Todo queda guardado solo en este dispositivo. No se envía a ningún lado.</span>
+            <span class="small">Se guarda en este dispositivo. Solo se envía si entrás a un grupo de tu profe.</span>
+            <span class="small" id="hGroup"></span>
           </div>
         </aside>
       </div>
@@ -519,10 +533,21 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
             <small id="oMsg"></small>
           </div>
           <div class="row">
+            <label>Mi grupo</label>
+            <p class="small" id="oGrpTxt" style="margin:0"></p>
+            <div id="oGrpIn">
+              <input id="oGrpCode" type="text" maxlength="12" placeholder="Código del grupo" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              <div class="actions"><button class="btn" id="oGrpJoin" type="button">Entrar al grupo</button></div>
+            </div>
+            <div class="actions" style="margin-top:0"><button class="btn" id="oGrpLeave" type="button" hidden>Salir del grupo y borrar mis datos</button></div>
+            <small id="oGrpMsg" role="status"></small>
+          </div>
+          <div class="row">
             <label>Privacidad y datos</label>
             <details class="priv">
               <summary>Qué guarda esta app y qué no</summary>
-              <p><b>Qué se guarda.</b> Tu apodo, tu avance, tus rachas y tus ajustes. Quedan solo en este dispositivo, dentro del navegador. No hay cuentas, no hay servidor propio y no se envía nada a nadie. La app no usa analíticas, publicidad ni servicios de terceros.</p>
+              <p><b>Qué se guarda.</b> Tu apodo, tu avance, tus rachas y tus ajustes. Quedan en este dispositivo, dentro del navegador. No hay cuentas ni analíticas, publicidad o servicios de terceros.</p>
+              <p><b>Grupo del profe (opcional).</b> Solo si escribís el código que te dio tu profe, la app envía a un servidor tu apodo, qué lecciones completaste y con cuántas estrellas, tu racha, los días que practicaste esta semana, cuál sigue y cuándo fue la última vez. Lo ve únicamente tu profe. No se envía audio, ni apellido, ni mail, ni ubicación. Podés salir cuando quieras desde Opciones y se borran tus datos del servidor.</p>
               <p><b>Micrófono.</b> Si lo activás en los ejercicios de decir, la app escucha en el momento para marcar cuándo dijiste cada sílaba. No graba ni guarda audio. Podés usar la app sin micrófono.</p>
               <p><b>Alojamiento.</b> El sitio está en Vercel, que como cualquier alojamiento web puede registrar datos técnicos de acceso, por ejemplo la dirección IP. La app no los usa.</p>
               <p><b>Borrar todo.</b> Tocá «Borrar el avance» acá en Opciones, o limpiá los datos del sitio en el navegador.</p>
@@ -541,7 +566,20 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
       </div>
     </section>
   </main>
-  <footer class="foot">Hablá música · hecho por Ale Mambrin para Lenguaje Musical, Orquesta del Bicentenario de Choele Choel · Versión <span id="appVer"></span></footer>
+  <div id="welcome" class="welcome-ov wc1" role="dialog" aria-modal="true" aria-labelledby="wTit" hidden>
+  <div class="welcome-box">
+    <div id="wMas" aria-hidden="true"></div>
+    <h1 id="wTit">Hola, bienvenido a Hablá música</h1>
+    <label for="wName">¿Cómo te llamás? Poné tu nombre o un apodo, sin apellido.</label>
+    <input id="wName" type="text" maxlength="24" autocomplete="off" placeholder="Tu nombre o apodo">
+    <label for="wCode">Código del grupo <span class="wopt">(si tu profe te dio uno)</span></label>
+    <input id="wCode" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Por ejemplo ORQ26">
+    <p class="small">Con el código, tu profe ve tu apodo y por qué nivel vas. Sin código, todo queda solo en tu dispositivo.</p>
+    <p id="wMsg" class="wmsg" role="status"></p>
+    <div class="actions"><button class="btn primary" id="wGo" type="button">Empezar</button><button class="btn" id="wSkip" type="button" hidden>Seguir sin grupo</button></div>
+  </div>
+</div>
+<footer class="foot">Hablá música · hecho por Ale Mambrin para Lenguaje Musical, Orquesta del Bicentenario de Choele Choel · Versión <span id="appVer"></span></footer>
 </div>
 <script>
 (function(){
@@ -556,7 +594,7 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 
 /* ---------- progreso guardado ---------- */
 const KEY='pulsoColectivo.v2';
-const APP_VER='1.2';
+const APP_VER='1.3';
 let save={name:'',done:{},vm:{},days:[],nstars:{},exam:{},offset:0,vol:80,unlockAll:false};
 /* Toda entrada externa (memoria del navegador o código importado) se reconstruye campo por campo: solo pasan claves y tipos conocidos */
 function cleanSave(o){
@@ -575,12 +613,15 @@ function cleanSave(o){
     vol:Math.round(num(o.vol,20,100,80)),
     unlockAll:o.unlockAll===true
   };
+  if(typeof o.g==='string'&&/^[A-Z0-9]{4,12}$/.test(o.g))o2.g=o.g;
+  if(typeof o.id==='string'&&/^[a-f0-9]{16,32}$/.test(o.id))o2.id=o.id;
+  if(o.wel===true)o2.wel=true;
   if(o.micLat!=null)o2.micLat=num(o.micLat,0,.6,.12);
   if(o.track==='T'||o.track==='R')o2.track=o.track;
   return o2;
 }
 try{const s=cleanSave(JSON.parse(localStorage.getItem(KEY)||'null'));if(s)save=Object.assign(save,s)}catch(e){}
-const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}if(typeof onPersist==='function')onPersist()};
 
 /* ---------- figuras, silencios y fragmentos ---------- */
 const TOK={
@@ -3173,6 +3214,89 @@ function openOpts(){
   resetArmed=false;
 }
 
+/* ---------- grupo: envío de avance al profe (solo si la persona entró a un grupo) ---------- */
+var syncT=0,lastSent='',syncState='';
+function onPersist(){if(!save.g)return;clearTimeout(syncT);syncT=setTimeout(()=>syncNow(),5000)}
+function newId(){const a=new Uint8Array(12);if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(a);else for(let i=0;i<12;i++)a[i]=Math.floor(Math.random()*256);return Array.from(a,x=>('0'+x.toString(16)).slice(-2)).join('')}
+async function post(b){const r=await fetch('/api/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b),keepalive:true});let j={};try{j=await r.json()}catch(e){}j.status=r.status;return j}
+function syncPayload(){
+  const si=streakInfo();
+  const nx=(save.track==='T'?TL:LESSONS).find(l=>!save.done[l.id]);
+  const d={};Object.keys(save.done).forEach(k=>{if(/^\d{1,2}\.\d{1,2}$/.test(k))d[k]=Math.round(+save.done[k])||0});
+  return{n:save.name||'',d,s:si.streak,w:si.thisCount,nx:nx?nx.id+' '+nx.title:'Terminó todo',tr:save.track==='T'?'T':'R',
+    c:[LESSONS.filter(l=>save.done[l.id]).length,LESSONS.length,TL.filter(l=>save.done[l.id]).length,TL.length]};
+}
+async function syncNow(force){
+  if(!save.g)return;
+  if(!save.id){save.id=newId();try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}}
+  const p=syncPayload(),s=JSON.stringify(p);
+  if(!force&&s===lastSent)return;
+  try{
+    const r=await post(Object.assign({g:save.g,id:save.id},p));
+    if(r.ok){lastSent=s;syncState='ok'}
+    else if(r.gone){save.g='';try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}syncState='gone'}
+    else syncState='err';
+  }catch(e){syncState='err'}
+  updateGroupUI();
+}
+function updateGroupUI(){
+  const inG=!!save.g;
+  $('#oGrpTxt').textContent=inG
+    ?'Estás en el grupo '+save.g+'. Tu profe ve tu apodo, tus lecciones, tu racha y cuándo practicaste por última vez. No ve audio ni nada más.'+(syncState==='err'?' Ahora no hay conexión: se envía cuando vuelva.':'')
+    :(syncState==='gone'?'Tu profe cerró ese grupo. Ya no se envía nada.':'No estás en ningún grupo. Si tu profe te dio un código, escribilo acá.');
+  $('#oGrpIn').hidden=inG;$('#oGrpLeave').hidden=!inG;
+  const h=$('#hGroup');if(h)h.textContent=inG?'Grupo '+save.g:'';
+}
+async function oGrpJoin(){
+  const m=$('#oGrpMsg'),code=$('#oGrpCode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!save.name){m.textContent='Primero escribí tu apodo o nombre de pila en la pantalla de inicio.';return}
+  if(!/^[A-Z0-9]{4,12}$/.test(code)){m.textContent='El código lleva de 4 a 12 letras o números.';return}
+  m.textContent='Buscando el grupo…';
+  try{
+    const r=await fetch('/api/sync?g='+code);
+    if(r.status===404){m.textContent='Ese código no existe. Revisalo con tu profe.';return}
+    if(!r.ok){m.textContent='No pude conectarme. Probá de nuevo en un rato.';return}
+  }catch(e){m.textContent='No pude conectarme. Probá de nuevo en un rato.';return}
+  save.g=code;save.id=save.id||newId();persist();syncState='';$('#oGrpCode').value='';m.textContent='Listo, entraste al grupo.';
+  await syncNow(true);updateGroupUI();
+}
+async function oGrpLeave(){
+  const m=$('#oGrpMsg');m.textContent='Saliendo…';
+  try{
+    const r=await post({op:'leave',g:save.g,id:save.id||''});
+    if(!r.ok&&r.status!==400)throw 0;
+  }catch(e){m.textContent='No pude borrar tus datos del servidor. Probá con conexión.';return}
+  save.g='';persist();lastSent='';syncState='';updateGroupUI();m.textContent='Saliste del grupo. Se borraron tus datos del servidor.';
+}
+/* ---------- pantalla de bienvenida ---------- */
+function showWelcome(){
+  const w=$('#welcome');w.hidden=false;document.body.classList.add('modal');
+  $('#wMas').innerHTML=mascot('happy',120,'hop');
+  $('#wName').value=save.name||'';$('#wCode').value='';$('#wMsg').textContent='';$('#wSkip').hidden=true;
+  setTimeout(()=>{try{$('#wName').focus()}catch(e){}},50);
+}
+function wFinish(code){
+  const nm=$('#wName').value.trim().replace(/[\u0000-\u001f<>&"]/g,'').slice(0,24);
+  save.name=nm;save.wel=true;
+  if(code){save.g=code;save.id=save.id||newId();syncState=''}
+  persist();$('#welcome').hidden=true;document.body.classList.remove('modal');
+  $('#iName').value=save.name;renderHome();updateGroupUI();
+  if(save.g)syncNow(true);
+}
+async function wGo(){
+  const m=$('#wMsg'),nm=$('#wName').value.trim(),code=$('#wCode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  $('#wSkip').hidden=true;
+  if(!code){wFinish('');return}
+  if(!nm){m.textContent='Escribí tu nombre o apodo para que tu profe sepa quién sos.';$('#wName').focus();return}
+  if(!/^[A-Z0-9]{4,12}$/.test(code)){m.textContent='El código lleva de 4 a 12 letras o números. Si no tenés, dejalo vacío.';return}
+  m.textContent='Buscando el grupo…';$('#wGo').disabled=true;
+  try{
+    const r=await fetch('/api/sync?g='+code);
+    if(r.status===404){m.textContent='Ese código no existe. Revisalo con tu profe, o seguí sin grupo.';$('#wSkip').hidden=false;$('#wGo').disabled=false;return}
+    if(!r.ok)throw 0;
+  }catch(e){m.textContent='No pude conectarme. Probá de nuevo, o seguí sin grupo y entrás después desde Opciones.';$('#wSkip').hidden=false;$('#wGo').disabled=false;return}
+  $('#wGo').disabled=false;wFinish(code);
+}
 /* ---------- arranque ---------- */
 function init(){
   $('#bOpc').onclick=openOpts;
@@ -3187,11 +3311,13 @@ function init(){
   };
   $('#oReset').onclick=()=>{
     if(!resetArmed){resetArmed=true;$('#oReset').textContent='Tocá de nuevo para confirmar';$('#oMsg').textContent='Se borran el nombre, las lecciones, el vocabulario y la racha de este dispositivo. No se puede deshacer.';return}
-    save.name='';save.done={};save.vm={};save.days=[];save.nstars={};save.exam={};save.tq={};delete save.micLat;persist();renderHome();resetArmed=false;$('#oReset').textContent='Borrar el avance';$('#oMsg').textContent='Avance borrado.';
+    if(save.g&&save.id)post({op:'leave',g:save.g,id:save.id}).catch(()=>{});
+    save.name='';save.g='';save.wel=false;save.done={};save.vm={};save.days=[];save.nstars={};save.exam={};save.tq={};delete save.micLat;persist();renderHome();resetArmed=false;updateGroupUI();showWelcome();$('#oReset').textContent='Borrar el avance';$('#oMsg').textContent='Avance borrado.';
   };
   /* pasar el avance a otro dispositivo */
   $('#oExp').onclick=async()=>{
-    const code='HM1.'+btoa(unescape(encodeURIComponent(JSON.stringify(save))));
+    const ex=Object.assign({},save);delete ex.g;delete ex.id;delete ex.wel;
+    const code='HM1.'+btoa(unescape(encodeURIComponent(JSON.stringify(ex))));
     $('#oCode').value=code;
     try{await navigator.clipboard.writeText(code);$('#oMsg2').textContent='Código copiado. Pegalo en el otro dispositivo, en Opciones, y tocá Cargar.'}
     catch(e){$('#oCode').focus();$('#oCode').select();$('#oMsg2').textContent='Copiá el código que aparece en el cuadro y pegalo en el otro dispositivo.'}
@@ -3208,12 +3334,21 @@ function init(){
       if(!o||!Object.keys(o.done).length&&!Object.keys(o.vm).length&&!Object.keys(o.nstars).length&&!o.days.length)throw 0;
       const hasOwn=Object.keys(save.done).length||Object.keys(save.vm).length||save.days.length;
       if(hasOwn&&!impArmed){impArmed=true;$('#oImp').textContent='Tocá de nuevo para reemplazar';$('#oMsg2').textContent='Este código reemplaza el avance que hay en este dispositivo.';return}
-      disarmImp();
+      disarmImp();delete o.g;delete o.id;delete o.wel;
       Object.assign(save,{name:'',done:{},vm:{},days:[],nstars:{},exam:{},tq:{}},o);
       persist();renderHome();$('#oCode').value='';$('#oMsg2').textContent='Avance cargado.';
     }catch(e){disarmImp();$('#oMsg2').textContent='Ese código no sirve. Copialo de nuevo completo, sin cortar ni agregar nada.'}
   };
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelPlay();micClose()}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelPlay();micClose();syncNow()}});
+  /* ---------- grupo del profe (opcional) ---------- */
+  $('#wGo').onclick=wGo;$('#wSkip').onclick=()=>wFinish('');
+  $('#wCode').addEventListener('keydown',e=>{if(e.key==='Enter')wGo()});$('#wName').addEventListener('keydown',e=>{if(e.key==='Enter')$('#wCode').focus()});
+  $('#oGrpJoin').onclick=oGrpJoin;
+  $('#oGrpLeave').onclick=oGrpLeave;
+  updateGroupUI();
+  if(!save.wel&&typeof __TEST__==='undefined')showWelcome();
+  if(save.g)syncNow(true);
+
   const av=$('#appVer');if(av)av.textContent=APP_VER;
   renderHome();
   prepClef();prepBass();
