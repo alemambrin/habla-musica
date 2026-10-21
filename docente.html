@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Hablá música · Panel docente</title>
+<style>
+:root{--bg:#F4F7FB;--surface:#fff;--ink:#1E2B38;--muted:#5F7385;--line:#DFE6EE;--line2:#C6D1DC;--blue:#1D7FC4;--green:#2E9B4F;--warn:#B45309;--warnbg:#FEF3C7;--bad:#B3261E}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0E1820;--surface:#17252F;--ink:#EDF4F9;--muted:#9BB0C0;--line:#2A3E4D;--line2:#3B5366;--blue:#5BB4F0;--green:#5CD07F;--warn:#F5C26B;--warnbg:#3A2E12;--bad:#FF8F85}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1060px;margin:0 auto;padding:16px}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 16px}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+input,select,button{font:600 16px system-ui,sans-serif;min-height:46px;border-radius:12px;border:2px solid var(--line2);background:var(--surface);color:var(--ink);padding:0 14px}
+button{cursor:pointer;border-bottom-width:4px}
+button.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+button.dng{color:var(--bad)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:0 0 auto}
+.grow{flex:1 1 200px!important}
+.msg{min-height:22px;color:var(--muted);margin:8px 0 0}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.chip{border:2px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:700;background:var(--surface)}
+.chip.w{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
+.tw{overflow-x:auto;border:2px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:760px;background:var(--surface)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:14px;color:var(--muted);font-weight:800;white-space:nowrap}
+th button{all:unset;cursor:pointer;font-weight:800}
+th button:focus-visible{outline:3px solid var(--blue)}
+tr:last-child td{border-bottom:0}
+.bar{width:110px;height:10px;border-radius:6px;background:var(--line);overflow:hidden;display:inline-block;vertical-align:middle}
+.bar i{display:block;height:100%;background:var(--green)}
+.bar.t i{background:var(--blue)}
+.num{font-variant-numeric:tabular-nums;margin-left:8px;color:var(--muted);font-size:14px}
+.inact td{background:var(--warnbg)}
+.nm{font-weight:800}
+.small{color:var(--muted);font-size:14px}
+.x{min-height:36px;padding:0 10px;font-size:14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>Panel docente · Hablá música</h1>
+  <p class="sub">Quiénes están practicando y por dónde van.</p>
+
+  <section class="card" id="login">
+    <label for="key"><b>Clave de docente</b></label>
+    <div class="row" style="margin-top:8px">
+      <input id="key" type="password" class="grow" autocomplete="current-password" placeholder="Tu clave">
+      <button class="pri" id="enter" type="button">Entrar</button>
+    </div>
+    <p class="msg" id="lmsg" role="status"></p>
+  </section>
+
+  <section id="panel" hidden>
+    <div class="card">
+      <div class="row">
+        <label for="grp"><b>Grupo</b></label>
+        <select id="grp" class="grow"></select>
+        <button id="ref" type="button">Actualizar</button>
+        <button id="out" type="button">Salir</button>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <input id="newLabel" type="text" class="grow" maxlength="40" placeholder="Nombre del grupo nuevo (por ejemplo Orquesta 2026)">
+        <input id="newCode" type="text" maxlength="12" placeholder="Código (opcional)" autocapitalize="characters" style="width:190px">
+        <button id="mk" type="button">Crear grupo</button>
+      </div>
+      <p class="msg" id="gmsg" role="status"></p>
+      <p class="small" id="codeinfo"></p>
+    </div>
+
+    <div class="sum" id="sum"></div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th><button data-k="n" type="button">Nombre</button></th>
+        <th><button data-k="r" type="button">Ritmo</button></th>
+        <th><button data-k="t" type="button">Teoría</button></th>
+        <th>Va por</th>
+        <th><button data-k="st" type="button">Estrellas</button></th>
+        <th><button data-k="s" type="button">Racha</button></th>
+        <th><button data-k="ts" type="button">Última vez</button></th>
+        <th></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <p class="small" id="empty" hidden>Todavía no entró nadie a este grupo. Pasales el código y que lo escriban al abrir la app.</p>
+    <p style="margin-top:16px"><button class="dng" id="delg" type="button">Borrar este grupo y todos sus datos</button></p>
+  </section>
+</main>
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+var KEY='';try{KEY=sessionStorage.getItem('hmk')||''}catch(e){}
+var cur='',data=null,sortK='ts',sortD=-1,timer=0;
+function api(method,qs,body){
+  return fetch('/api/docente'+(qs||''),{method:method,headers:{'x-key':KEY,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json().catch(function(){return{}}).then(function(j){j.status=r.status;return j})});
+}
+function ago(ts,now){
+  var s=Math.max(0,(now-ts)/1000);
+  if(s<90)return'ahora';if(s<3600)return'hace '+Math.round(s/60)+' min';if(s<86400)return'hace '+Math.round(s/3600)+' h';
+  var d=Math.round(s/86400);return d===1?'ayer':'hace '+d+' días';
+}
+function login(){
+  KEY=$('#key').value||KEY;$('#lmsg').textContent='Verificando…';
+  api('GET','').then(function(r){
+    if(r.status===401){$('#lmsg').textContent='Esa clave no es correcta.';KEY='';return}
+    if(r.status===429){$('#lmsg').textContent='Demasiados intentos. Esperá unos minutos.';return}
+    if(!r.ok){$('#lmsg').textContent='No pude conectarme al servidor. Revisá que la base de datos esté configurada.';return}
+    try{sessionStorage.setItem('hmk',KEY)}catch(e){}
+    $('#login').hidden=true;$('#panel').hidden=false;$('#key').value='';fillGroups(r.groups);
+    clearInterval(timer);timer=setInterval(function(){if(!document.hidden)load()},30000);
+  }).catch(function(){$('#lmsg').textContent='No pude conectarme.'});
+}
+function fillGroups(gs){
+  var sel=$('#grp');sel.textContent='';
+  gs.sort(function(a,b){return b.created-a.created});
+  gs.forEach(function(g){var o=document.createElement('option');o.value=g.g;o.textContent=(g.label?g.label+' · ':'')+g.g+' ('+g.n+')';sel.appendChild(o)});
+  if(!gs.length){cur='';data=null;render();$('#codeinfo').textContent='Todavía no hay grupos. Creá el primero acá arriba.';return}
+  if(!cur||!gs.some(function(g){return g.g===cur}))cur=gs[0].g;
+  sel.value=cur;load();
+}
+function load(){
+  if(!cur)return;
+  api('GET','?g='+encodeURIComponent(cur)).then(function(r){
+    if(r.status===401){logout();return}
+    if(r.ok){data=r;render()}
+  });
+}
+function stars(m){var t=0;for(var k in m.d)t+=m.d[k];return t}
+function val(m,k){return k==='n'?m.n.toLowerCase():k==='r'?m.c[0]:k==='t'?m.c[2]:k==='st'?stars(m):k==='s'?m.s:m.ts}
+function render(){
+  var rows=$('#rows');rows.textContent='';
+  $('#codeinfo').textContent=cur?'Código para los alumnos: '+cur:'';
+  if(!data){$('#sum').textContent='';$('#empty').hidden=true;return}
+  var ms=data.members.slice(),now=data.now;
+  ms.sort(function(a,b){var x=val(a,sortK),y=val(b,sortK);return(x<y?-1:x>y?1:0)*sortD});
+  var hoy=0,inact=0;
+  ms.forEach(function(m){var d=now-m.ts;if(d<86400000)hoy++;if(d>7*86400000)inact++});
+  var sum=$('#sum');sum.textContent='';
+  [[ms.length+' en el grupo',''],[hoy+' practicaron hoy',''],[inact+' sin actividad hace más de 7 días',inact?'w':'']].forEach(function(x){var c=document.createElement('span');c.className='chip '+x[1];c.textContent=x[0];sum.appendChild(c)});
+  $('#empty').hidden=ms.length>0;
+  ms.forEach(function(m){
+    var tr=document.createElement('tr');if(now-m.ts>7*86400000)tr.className='inact';
+    function td(t,cls){var e=document.createElement('td');if(cls)e.className=cls;if(t!=null)e.textContent=t;tr.appendChild(e);return e}
+    td(m.n,'nm');
+    [[m.c[0],m.c[1],''],[m.c[2],m.c[3],'t']].forEach(function(p){
+      var e=td();var b=document.createElement('span');b.className='bar '+p[2];var i=document.createElement('i');i.style.width=(p[1]?Math.round(100*p[0]/p[1]):0)+'%';b.appendChild(i);e.appendChild(b);
+      var n=document.createElement('span');n.className='num';n.textContent=p[0]+'/'+p[1];e.appendChild(n);
+    });
+    td((m.tr==='T'?'Teoría ':'Ritmo ')+(m.nx||''));
+    td(stars(m)+' ★');
+    td(m.s?m.s+(m.s===1?' semana':' semanas'):'—');
+    td(ago(m.ts,now));
+    var e=td();var bx=document.createElement('button');bx.type='button';bx.className='x';bx.textContent='Quitar';bx.setAttribute('aria-label','Quitar a '+m.n+' del grupo');
+    bx.onclick=function(){if(confirm('¿Quitar a '+m.n+' del grupo? Se borran sus datos del servidor.'))api('POST','',{op:'remove',g:cur,id:m.id}).then(load)};
+    e.appendChild(bx);rows.appendChild(tr);
+  });
+}
+function logout(){KEY='';try{sessionStorage.removeItem('hmk')}catch(e){}clearInterval(timer);$('#panel').hidden=true;$('#login').hidden=false}
+function groups(){return api('GET','').then(function(r){if(r.ok)fillGroups(r.groups);return r})}
+$('#enter').onclick=login;$('#key').addEventListener('keydown',function(e){if(e.key==='Enter')login()});
+$('#out').onclick=logout;$('#ref').onclick=function(){groups()};
+$('#grp').onchange=function(){cur=this.value;load()};
+$('#mk').onclick=function(){
+  var code=$('#newCode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  $('#gmsg').textContent='Creando…';
+  api('POST','',{op:'create',g:code,label:$('#newLabel').value}).then(function(r){
+    if(!r.ok){$('#gmsg').textContent=r.msg||'No se pudo crear el grupo.';return}
+    $('#gmsg').textContent='Grupo creado. El código es '+r.g+'.';$('#newCode').value='';$('#newLabel').value='';cur=r.g;groups();
+  });
+};
+$('#delg').onclick=function(){
+  if(!cur)return;
+  if(!confirm('¿Borrar el grupo '+cur+' y los datos de todos sus alumnos? No se puede deshacer.'))return;
+  api('POST','',{op:'delgroup',g:cur}).then(function(){cur='';groups()});
+};
+document.querySelectorAll('th button').forEach(function(b){b.onclick=function(){var k=b.dataset.k;if(sortK===k)sortD*=-1;else{sortK=k;sortD=k==='n'?1:-1}render()}});
+if(KEY)login();
+})();
+</script>
+</body>
+</html>
