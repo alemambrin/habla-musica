@@ -25,6 +25,7 @@ module.exports = async (req, res) => {
       const g = String(req.query.g || '').toUpperCase();
       if (!g) {
         const raw = (await rcmd(['HGETALL', 'hm:groups'])) || [];
+        if (req.headers['x-dbg']) { const r0 = await rcmd0(['HGETALL', 'hm:groups']); const k0 = await rcmd0(['HKEYS', 'hm:groups']); const e0 = await rcmd0(['HEXISTS', 'hm:groups', 'BVXHJD']); return send(res, 200, { dbg: [typeof r0, JSON.stringify(r0).slice(0, 200), JSON.stringify(k0), e0] }); }
         const out = [];
         for (let i = 0; i < raw.length; i += 2) {
           const n = await rcmd(['HLEN', 'hm:g:' + raw[i]]);
