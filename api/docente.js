@@ -1,5 +1,15 @@
 /* Panel docente: requiere la clave del docente (variable TEACHER_KEY) en el encabezado x-key. */
-const { rcmd, GROUP_RE, ID_RE, send, body, ip, limited, teacherOk } = require('./_lib');
+const { rcmd: rcmd0, GROUP_RE, ID_RE, send, body, ip, limited, teacherOk } = require('./_lib');
+/* HGETALL puede venir como lista plana o como objeto según el servicio: se normaliza a lista plana */
+const rcmd = async (a) => {
+  const r = await rcmd0(a);
+  if (a[0] === 'HGETALL') {
+    if (Array.isArray(r)) return r;
+    if (r && typeof r === 'object') return Object.entries(r).flat();
+    return [];
+  }
+  return r;
+};
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const crypto = require('crypto');
 
