@@ -276,7 +276,7 @@ body.modal{overflow:hidden}
 .steps li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;font:600 18px/1.3 var(--f-body)}
 .steps li::before{content:counter(st);flex:none;width:28px;height:28px;border-radius:50%;background:var(--wc);color:#fff;display:grid;place-items:center;font:800 15px var(--f-display);margin-top:1px}
 .notation{width:100%;overflow-x:auto;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:8px 6px}
-.notation svg{display:block;width:100%;height:auto;max-height:200px;min-width:300px}
+.notation svg{display:block;width:100%;height:auto;max-height:200px;min-width:0}
 .big-fig{max-width:260px;margin-inline:auto}
 .ev{color:var(--ink)}
 .ev.on{color:var(--wc)}
@@ -449,14 +449,16 @@ h1,h2,h3,.brand b,.nwbig,.wbanner h2{font-weight:800;letter-spacing:-.025em;font
 /* ---- publicación ---- */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+html{overscroll-behavior-y:none}
+.pad,.opt,.btn,.spick,.splay,.node,.notation{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .row input[type=text]{min-height:48px;border:2px solid var(--line2);border-radius:14px;padding:0 14px;font:600 16px var(--f-body);background:var(--surface);color:var(--ink);width:100%}
 .foot{margin:34px 0 0;padding:14px 0;border-top:2px solid var(--line);color:var(--muted);font:500 13px/1.5 var(--f-body);text-align:center}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 /* figuras: regla de pulsos, conteo, cursor, opciones de sonido */
-.cnt{font:700 17px var(--f-body);fill:var(--muted);text-anchor:middle;opacity:.5}
+.cnt{font:700 18px var(--f-body);fill:var(--muted);text-anchor:middle;opacity:.5}
 .cnt.cn{opacity:1;fill:var(--ink)}
-.cnt.num{font-size:20px;font-weight:800}
+.cnt.num{font-size:22px;font-weight:800}
 .cur{stroke:var(--wc,var(--c2));stroke-width:3.5;stroke-linecap:round;opacity:.85}
 .ruler{margin:10px 2px 6px}
 .rbeats{display:grid;grid-template-columns:repeat(var(--n),1fr);font:800 13px var(--f-body);color:var(--muted)}
@@ -483,6 +485,39 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
 .figname{font:700 15px var(--f-body);color:var(--muted);text-align:center;margin:2px 0 0}
 .nwcard .ruler{margin:8px 0;width:100%;box-sizing:border-box}
 .nwcard .notation{width:100%;box-sizing:border-box}
+
+/* celular en horizontal: la partitura y el pad quedan lado a lado, sin scroll mientras tocás */
+@media (max-height:520px) and (orientation:landscape){
+  #pStage:has(.pad){display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:8px 14px;align-items:start}
+  #pStage:has(.pad)>*{grid-column:1;min-width:0}
+  #pStage:has(.pad)>.pad{grid-column:2;grid-row:1/span 6;min-height:180px;position:sticky;top:8px}
+  #pStage:has(.pad) .coach .mascot{display:none}
+  #pStage:has(.pad) .coach{margin:0}
+  #pStage:has(.pad) .bubble{font-size:15px;padding:8px 12px}
+  #pStage:has(.pad) .tape .tgrp.cnt{display:none}
+  #pStage:has(.pad) .tape{margin:0}
+  #pStage:has(.pad) .notation{padding:4px 6px}
+  #pStage:has(.pad) .notation svg{max-height:96px}
+  #pStage:has(.pad) .mask{min-height:80px;font-size:18px}
+}
+
+/* juego de notas: todo a la vista sin scroll, porque corre contra el reloj */
+#pStage:has(#rCh) .coach .mascot{display:none}
+#pStage:has(#rCh) .coach{margin:0}
+#pStage:has(#rCh) .bubble{font-size:15px;padding:8px 12px}
+@media (max-width:520px){
+  #rCh{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+  #rCh .opt{min-height:60px;padding:6px 0;flex-direction:column;gap:0;font-size:17px}
+  #rCh .opt small{font-size:11px;opacity:.7}
+}
+@media (max-height:520px) and (orientation:landscape){
+  #pStage:has(#rCh){display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:6px 14px;align-items:start}
+  #pStage:has(#rCh)>.coach{display:none}
+  #pStage:has(#rCh)>.hud{display:none}
+  #pStage:has(#rCh)>.rainwrap{grid-column:1}
+  #pStage:has(#rCh)>#rCh{grid-column:2;grid-template-columns:repeat(4,minmax(0,1fr))}
+  #pStage:has(#rCh) #rCh .opt{min-height:52px}
+}
 </style>
 </head><body>
 <div class="app" id="app">
@@ -625,7 +660,7 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 
 /* ---------- progreso guardado ---------- */
 const KEY='pulsoColectivo.v2';
-const APP_VER='1.4';
+const APP_VER='1.5';
 let save={name:'',done:{},vm:{},days:[],nstars:{},exam:{},offset:0,vol:80,unlockAll:false};
 /* Toda entrada externa (memoria del navegador o código importado) se reconstruye campo por campo: solo pasan claves y tipos conocidos */
 function cleanSave(o){
@@ -945,15 +980,19 @@ function drawRhythm(measures,ts,o){
         }}
       return null;
     };
-    const subB={};
+    let lastX=null;const subB={};
     tl0.evs.forEach(e=>{if(e.onset){const f=e.pos-Math.floor(e.pos+1e-6);if(f>1e-6)subB[Math.floor(e.pos+1e-6)]=1}});
     for(let mi=0;mi<measures.length;mi++){
       for(let rel=0;rel<bpbM-1e-6;rel+=g){
         const p=mi*bpbM+rel,xx=xAt(p);if(xx==null)continue;
         if(rel-Math.floor(rel+1e-6)>1e-6&&!subB[Math.floor(p+1e-6)])continue;
+        if(g<.3&&rel-Math.floor(rel+1e-6)>1e-6&&!ons[Math.round(p*12)])continue;
         const num=Math.floor(rel+1e-6)+1,f=Math.round((rel-Math.floor(rel+1e-6))*12);
         const lab=f===0?String(num):g===.5?'y':g===.25?(f===3?'e':f===6?'y':'a'):g<.4?(f===4?'la':'li'):'';
         if(!lab)continue;
+        const isOn=!!ons[Math.round(p*12)];
+        if(!isOn&&lastX!=null&&Math.abs(xx-lastX)<17)continue;
+        lastX=xx;
         cnt+=`<text class="cnt ${ons[Math.round(p*12)]?'cn':'ch'}${f===0?' num':''}" x="${xx}" y="${LINE+50}" fill="currentColor">${lab}</text>`;
       }
     }
@@ -1011,7 +1050,7 @@ function noteSvg(step,cx){
 
 /* ---------- audio ---------- */
 let AC=null,bus=null;
-const ac=()=>{if(!AC){const C=window.AudioContext||window.webkitAudioContext;AC=new C()}if(AC.state==='suspended')AC.resume();return AC};
+const ac=()=>{if(!AC){const C=window.AudioContext||window.webkitAudioContext;AC=new C();try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}}if(AC.state==='suspended')AC.resume();return AC};
 const getBus=()=>{const a=ac();if(!bus){bus=a.createGain();bus.gain.value=(save.vol||80)/100;bus.connect(a.destination)}return bus};
 const killAudio=()=>{if(bus){try{bus.disconnect()}catch(e){}bus=null}};
 function tone(f,t,d,type,v){
@@ -1761,7 +1800,7 @@ function holeEx(c,it,mode){
   const cfg=c.cfg,sound=mode==='read';
   let tgt,h;
   for(let t=0;t<30&&!h;t++){tgt=c.pat({measures:sound?cfg.measures:1});h=pickHole(tgt)}
-  if(!h){tgt=c.pat({measures:1});h={i:0,t:tgt.meas[0][0].t,pos:0,d:TOK[tgt.meas[0][0].t].d}}
+  if(!h)return sound?EX.read(c,Object.assign({},it,{mode:'A'})):EX.match(c,it);
   const opts=holeOptions(h,c,!sound),st=c.st;
   const hole={from:h.i,to:h.i+1};
   st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">'+(sound?'Escuchá el ritmo completo. En la partitura falta una figura: ¿cuál es?':'Al compás le falta una figura. Mirá cuánto lugar queda libre en la regla y elegí la que entra justo.')+'</div></div>'
@@ -1991,12 +2030,12 @@ function runRain(L){
   const W=640,ZONE=120,SX=620;
   const R={ok:0,err:0,note:null,last:null,ended:false};
   const st=$('#pStage');
-  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">Las notas se acercan a la línea punteada. Elegí su nombre antes de que la alcancen. Los errores no restan: te mostramos la respuesta y seguís. En la compu podés usar las teclas 1 a 7.</div></div>'
+  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">Elegí el nombre de cada nota antes de que llegue a la línea punteada. Si te equivocás, te mostramos la respuesta y seguís. En la compu: teclas 1 a 7.</div></div>'
     +'<div class="hud"><span id="rScore"></span></div>'
     +'<div class="rainwrap"><svg id="rSvg" viewBox="0 0 '+W+' 230" role="img" aria-label="Pentagrama en clave de sol con una nota que se acerca"></svg></div>'
     +'<div class="choices" id="rCh"></div>';
   const svg=$('#rSvg');
-  svg.innerHTML=staffBase(W)+'<line x1="'+ZONE+'" x2="'+ZONE+'" y1="70" y2="190" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 5"/><g id="rNote" class="ev"></g><text id="rTip" class="tip" x="'+(ZONE+16)+'" y="46"></text>';
+  svg.innerHTML=staffBase(W)+'<line x1="'+ZONE+'" x2="'+ZONE+'" y1="70" y2="190" stroke="var(--c3)" stroke-width="3.5" stroke-dasharray="7 6" stroke-linecap="round"/><g id="rNote" class="ev"></g><text id="rTip" class="tip" x="'+(ZONE+16)+'" y="46"></text>';
   const gN=$('#rNote'),tip=$('#rTip');
   DEG.forEach((n,i)=>{
     const b=document.createElement('button');b.type='button';b.className='opt';b.innerHTML=n+'<small>'+(i+1)+'</small>';
@@ -3135,7 +3174,12 @@ function renderTheoryWorlds(box){
 
 /* ---------- navegación y camino ---------- */
 const SCREENS=['sHome','sPlay','sOpts'];
-function show(id){stopAll();if(id!=='sPlay')micClose();SCREENS.forEach(s=>{$('#'+s).hidden=s!==id});$('#app').classList.toggle('playing',id==='sPlay');window.scrollTo(0,0)}
+let histOn=false,histSkip=0;
+function show(id){stopAll();if(id!=='sPlay')micClose();SCREENS.forEach(s=>{$('#'+s).hidden=s!==id});$('#app').classList.toggle('playing',id==='sPlay');window.scrollTo(0,0);
+  /* el botón «atrás» del celular vuelve al camino en vez de sacarte de la app */
+  if(id!=='sHome'&&!histOn){try{history.pushState({hm:1},'');histOn=true}catch(e){}}
+  else if(id==='sHome'&&histOn){histOn=false;histSkip++;try{history.back()}catch(e){histSkip--}}}
+if(typeof addEventListener==='function')addEventListener('popstate',()=>{if(histSkip){histSkip--;return}if(histOn){histOn=false;show('sHome');renderHome()}});
 function goHome(){show('sHome');renderHome()}
 const starsIc=n=>[1,2,3].map(k=>'<span class="'+(k<=n?'':'off')+'">'+ic('star')+'</span>').join('');
 const VOCAB=['q','qr','h','hr','w','wr','ee','sx','esx','sxe','hd','qde','edsx','qq','hq','syn','ere','ttt','tqt','ttq','bq','bh'];
