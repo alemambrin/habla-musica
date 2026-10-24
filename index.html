@@ -452,6 +452,37 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
 .row input[type=text]{min-height:48px;border:2px solid var(--line2);border-radius:14px;padding:0 14px;font:600 16px var(--f-body);background:var(--surface);color:var(--ink);width:100%}
 .foot{margin:34px 0 0;padding:14px 0;border-top:2px solid var(--line);color:var(--muted);font:500 13px/1.5 var(--f-body);text-align:center}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* figuras: regla de pulsos, conteo, cursor, opciones de sonido */
+.cnt{font:700 17px var(--f-body);fill:var(--muted);text-anchor:middle;opacity:.5}
+.cnt.cn{opacity:1;fill:var(--ink)}
+.cnt.num{font-size:20px;font-weight:800}
+.cur{stroke:var(--wc,var(--c2));stroke-width:3.5;stroke-linecap:round;opacity:.85}
+.ruler{margin:10px 2px 6px}
+.rbeats{display:grid;grid-template-columns:repeat(var(--n),1fr);font:800 13px var(--f-body);color:var(--muted)}
+.rbeats i{font-style:normal;border-left:2px solid var(--line2);padding-left:5px}
+.rlane{position:relative;height:36px;margin-top:3px;border-radius:10px;background:var(--bg);border:2px solid var(--line)}
+.rb{position:absolute;top:3px;bottom:3px;box-sizing:border-box;border-radius:8px;border:2px solid var(--surface)}
+.rb.note{background:var(--wc,var(--c2))}
+.rb.tied{background:var(--wc,var(--c2));opacity:.45}
+.rb.rest{background:transparent;border:2.5px dashed var(--line2)}
+.rb.hole{background:transparent;border:2.5px dashed var(--c3);display:flex;align-items:center;justify-content:center;color:var(--c3d);font:800 20px var(--f-display)}
+.rb.on{filter:brightness(1.25)}
+.fignote{margin:6px 0}
+.sopts{display:flex;flex-direction:column;gap:10px}
+.sopt{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:stretch}
+.sopt .splay{display:flex;align-items:center;gap:10px;justify-content:center;font:800 18px var(--f-body);color:var(--ink);background:var(--surface);border:2px solid var(--line2);border-bottom-width:5px;border-radius:16px;min-height:60px;padding:8px 14px;cursor:pointer}
+.sopt .splay.on{background:var(--wcs);border-color:var(--wc)}
+.sopt .spick{font:800 17px var(--f-body);color:#fff;background:var(--wc,var(--c2));border:0;border-bottom:5px solid var(--wcd,var(--c2d));border-radius:16px;padding:8px 18px;min-height:60px;cursor:pointer}
+.sopt.ok .splay{background:var(--good-soft);border-color:var(--good)}
+.sopt.bad .splay{background:var(--bad-soft);border-color:var(--bad)}
+.sopt button[disabled]{cursor:default;opacity:.7}
+.figopts{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))!important}
+.figopts .opt{min-height:124px;padding:8px}
+.figopts .opt svg{max-height:108px}
+.figname{font:700 15px var(--f-body);color:var(--muted);text-align:center;margin:2px 0 0}
+.nwcard .ruler{margin:8px 0;width:100%;box-sizing:border-box}
+.nwcard .notation{width:100%;box-sizing:border-box}
 </style>
 </head><body>
 <div class="app" id="app">
@@ -472,7 +503,7 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
           <div class="tracks" id="tracks" role="tablist" aria-label="Recorrido"><button type="button" role="tab" id="tkR">Ritmo</button><button type="button" role="tab" id="tkT">Notas y teoría</button></div>
           <div id="worlds"></div>
           <h2 class="sec">Mi vocabulario</h2>
-          <p class="lead">Cada palabra tiene cinco medidores. Los que quedan bajos son los que el repaso va a buscar.</p>
+          <p class="lead">Cada figura tiene cinco medidores. Los que quedan bajos son los que el repaso va a buscar.</p>
           <div class="legend" id="legend"></div>
           <div class="vgrid" id="vocab"></div>
         </div>
@@ -548,7 +579,7 @@ button,.node,.opt{touch-action:manipulation;-webkit-tap-highlight-color:transpar
               <summary>Qué guarda esta app y qué no</summary>
               <p><b>Qué se guarda.</b> Tu apodo, tu avance, tus rachas y tus ajustes. Quedan en este dispositivo, dentro del navegador. No hay cuentas ni analíticas, publicidad o servicios de terceros.</p>
               <p><b>Grupo del profe (opcional).</b> Solo si escribís el código que te dio tu profe, la app envía a un servidor tu apodo, qué lecciones completaste y con cuántas estrellas, tu racha, los días que practicaste esta semana, cuál sigue y cuándo fue la última vez. Lo ve únicamente tu profe. No se envía audio, ni apellido, ni mail, ni ubicación. Podés salir cuando quieras desde Opciones y se borran tus datos del servidor.</p>
-              <p><b>Micrófono.</b> Si lo activás en los ejercicios de decir, la app escucha en el momento para marcar cuándo dijiste cada sílaba. No graba ni guarda audio. Podés usar la app sin micrófono.</p>
+              <p><b>Micrófono.</b> Los ejercicios de ritmo se hacen tocando la pantalla o la barra espaciadora. La app no usa el micrófono.</p>
               <p><b>Alojamiento.</b> El sitio está en Vercel, que como cualquier alojamiento web puede registrar datos técnicos de acceso, por ejemplo la dirección IP. La app no los usa.</p>
               <p><b>Borrar todo.</b> Tocá «Borrar el avance» acá en Opciones, o limpiá los datos del sitio en el navegador.</p>
               <p><b>Con menores.</b> Pedí a los chicos que usen un apodo o su nombre de pila, sin apellido ni otros datos personales.</p>
@@ -594,7 +625,7 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 
 /* ---------- progreso guardado ---------- */
 const KEY='pulsoColectivo.v2';
-const APP_VER='1.3';
+const APP_VER='1.4';
 let save={name:'',done:{},vm:{},days:[],nstars:{},exam:{},offset:0,vol:80,unlockAll:false};
 /* Toda entrada externa (memoria del navegador o código importado) se reconstruye campo por campo: solo pasan claves y tipos conocidos */
 function cleanSave(o){
@@ -644,7 +675,7 @@ const TOK={
 const NAME={w:'redonda',h:'blanca',q:'negra',e:'corchea',s:'semicorchea',ed:'corchea con puntillo',hd:'blanca con puntillo',qd:'negra con puntillo',
   t:'corchea de tresillo',tq:'negra de tresillo',bq:'negra con puntillo',bh:'blanca con puntillo',
   wr:'silencio de redonda',hr:'silencio de blanca',qr:'silencio de negra',er:'silencio de corchea',
-  tr:'silencio de corchea de tresillo',tqr:'silencio de negra de tresillo',bqr:'silencio de negra con puntillo',bhr:'silencio de blanca con puntillo'};
+  hole:'figura que falta',tr:'silencio de corchea de tresillo',tqr:'silencio de negra de tresillo',bqr:'silencio de negra con puntillo',bhr:'silencio de blanca con puntillo'};
 const CH={q:['q'],h:['h'],w:['w'],qr:['qr'],hr:['hr'],wr:['wr'],ee:['e','e'],hd:['hd'],qde:['qd','e'],qq:['q~','q'],hq:['h~','q'],
   sx:['s','s','s','s'],esx:['e','s','s'],sxe:['s','s','e'],edsx:['ed','s'],
   syn:['e','q','e'],ere:['er','e'],
@@ -787,6 +818,26 @@ function hiSyl(root,k){
   if(n)n.classList.add('on');
 }
 
+/* ---------- nombres de las figuras (lo que se ve en el repaso y en los medidores) ---------- */
+const FIG={q:'Negra',qr:'Silencio de negra',h:'Blanca',hr:'Silencio de blanca',w:'Redonda',wr:'Silencio de redonda',ee:'Dos corcheas',
+  sx:'Cuatro semicorcheas',esx:'Corchea y dos semicorcheas',sxe:'Dos semicorcheas y corchea',edsx:'Corchea con puntillo y semicorchea',
+  hd:'Blanca con puntillo',qde:'Negra con puntillo y corchea',qq:'Negra ligada a negra',hq:'Blanca ligada a negra',
+  syn:'Síncopa',ere:'Silencio de corchea y corchea',ttt:'Tresillo de corcheas',tqt:'Tresillo: negra y corchea',ttq:'Tresillo: corchea y negra',rtt:'Tresillo con silencio',
+  bq:'Negra con puntillo (6/8)',bqr:'Silencio de negra con puntillo',bh:'Blanca con puntillo (6/8)',bhr:'Silencio de compás (6/8)'};
+
+/* regla de pulsos: cada figura ocupa tanto lugar como dura */
+function rulerHTML(evs,bpb,o){
+  o=o||{};
+  const tl=timeline([evs]);
+  let h='<div class="ruler" aria-hidden="true"><div class="rbeats" style="--n:'+bpb+'">'+Array.from({length:bpb},(_,k)=>'<i>'+(k+1)+'</i>').join('')+'</div><div class="rlane" style="--n:'+bpb+'">';
+  tl.evs.forEach(e=>{
+    const cls=e.rest?'rest':e.onset?'note':'tied';
+    h+='<span class="rb '+cls+(o.cls&&o.cls[e.idx]?' '+o.cls[e.idx]:'')+'" data-i="'+e.idx+'" style="left:'+(e.pos/bpb*100)+'%;width:'+(e.d/bpb*100)+'%"></span>';
+  });
+  if(o.hole)h+='<span class="rb hole" style="left:'+(o.hole.pos/bpb*100)+'%;width:'+(o.hole.d/bpb*100)+'%"><b>?</b></span>';
+  return h+'</div></div>';
+}
+
 /* ---------- notación rítmica en una línea ---------- */
 const ADV={w:104,h:70,hd:88,q:44,qd:58,e:30,s:24,ed:46,t:30,tq:48,bq:62,bh:100,wr:92,hr:62,qr:40,er:30,tr:30,tqr:46,bqr:56,bhr:90};
 function drawRhythm(measures,ts,o){
@@ -795,9 +846,15 @@ function drawRhythm(measures,ts,o){
   let x=ts?56:(o.nobar?14:18);
   const items=[],bars=[];
   let beat=0,idx=0;
+  let hs=null;
   measures.forEach((m,mi)=>{
     m.forEach(e=>{
       const T=TOK[e.t],a=ADV[e.t];
+      if(o.hole&&idx>=o.hole.from&&idx<o.hole.to){
+        hs=hs||{a:0,d:0,x0:x,b0:beat};hs.a+=a;hs.d+=T.d;idx++;x+=a;beat+=T.d;
+        if(idx===o.hole.to){const w=Math.max(54,hs.a);items.push({e:{t:'hole'},T:{k:'hole',d:hs.d},mi,idx:o.hole.from,x:hs.x0+w/2,beat:hs.b0,bk:Math.floor(hs.b0+1e-6),hole:true,w});x+=w-hs.a;hs=null}
+        return;
+      }
       items.push({e,T,mi,idx:idx++,x:x+a/2,beat,bk:Math.floor(beat+1e-6)});
       x+=a;beat+=T.d;
     });
@@ -855,6 +912,8 @@ function drawRhythm(measures,ts,o){
       }
       const nx=items[i+1];
       if(it.e.tie&&nx&&nx.T.k==='note')s+=`<path d="M${cx} ${LINE+10} Q${(cx+nx.x)/2} ${LINE+27} ${nx.x} ${LINE+10}" fill="none" stroke="currentColor" stroke-width="2"/>`;
+    }else if(T.k==='hole'){
+      s+=`<rect x="${cx-it.w/2+4}" y="${LINE-34}" width="${it.w-8}" height="68" rx="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="6 5" opacity=".7"/><text x="${cx}" y="${LINE+10}" text-anchor="middle" font-size="30" font-weight="800" fill="currentColor" opacity=".8">?</text>`;
     }else{
       const r=T.r;
       if(r==='q')s+=`<path d="M${cx-4} ${LINE-18} l 8 10 l -7 9 l 8 10 q -8 -3 -6 9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`;
@@ -871,13 +930,42 @@ function drawRhythm(measures,ts,o){
     g+=`<g class="${cls.join(' ')}" data-i="${it.idx}">${s}</g>`;
   });
   const aria=items.map(i=>NAME[i.e.t]).join(', ');
-  let svg=`<svg xmlns="${NS}" viewBox="0 0 ${W} ${o.words?128:108}" role="img" aria-label="${esc((ts?ts+': ':'')+aria)}"><line class="stf" x1="2" x2="${W-2}" y1="${LINE}" y2="${LINE}"/>`;
+  let cnt='';
+  if(o.count&&!o.hole){
+    const tl0=timeline(measures),ons={};
+    tl0.evs.forEach(e=>{if(e.onset)ons[Math.round(e.pos*12)]=1});
+    const ds=items.map(i=>i.T.d);
+    const g=items.some(i=>i.T.tri)?1/3:ds.some(d=>d<.5-1e-6||Math.abs(d-.75)<1e-6)?.25:ds.some(d=>Math.abs(d-Math.round(d))>1e-6)?.5:1;
+    const last=items[items.length-1],bpbM=r6((last.beat+last.T.d)/measures.length);
+    const xAt=p=>{
+      for(let k=0;k<items.length;k++){const it=items[k];
+        if(p>=it.beat-1e-6&&p<it.beat+it.T.d-1e-6){
+          const nx=items[k+1]&&items[k+1].mi===it.mi?items[k+1].x:(it.x+ADV[it.e.t]/2+4);
+          return it.x+(p-it.beat)/it.T.d*(nx-it.x);
+        }}
+      return null;
+    };
+    const subB={};
+    tl0.evs.forEach(e=>{if(e.onset){const f=e.pos-Math.floor(e.pos+1e-6);if(f>1e-6)subB[Math.floor(e.pos+1e-6)]=1}});
+    for(let mi=0;mi<measures.length;mi++){
+      for(let rel=0;rel<bpbM-1e-6;rel+=g){
+        const p=mi*bpbM+rel,xx=xAt(p);if(xx==null)continue;
+        if(rel-Math.floor(rel+1e-6)>1e-6&&!subB[Math.floor(p+1e-6)])continue;
+        const num=Math.floor(rel+1e-6)+1,f=Math.round((rel-Math.floor(rel+1e-6))*12);
+        const lab=f===0?String(num):g===.5?'y':g===.25?(f===3?'e':f===6?'y':'a'):g<.4?(f===4?'la':'li'):'';
+        if(!lab)continue;
+        cnt+=`<text class="cnt ${ons[Math.round(p*12)]?'cn':'ch'}${f===0?' num':''}" x="${xx}" y="${LINE+50}" fill="currentColor">${lab}</text>`;
+      }
+    }
+  }
+  const xsAttr=o.cursor?' data-xs="'+items.map(i=>r6(i.beat)+':'+Math.round(i.x*10)/10).concat([r6(beat)+':'+Math.round((items[items.length-1].x+(ADV[items[items.length-1].e.t]||50)/2+2)*10)/10]).join(',')+'"':'';
+  let svg=`<svg xmlns="${NS}" viewBox="0 0 ${W} ${(o.words||o.count)?128:108}" role="img" aria-label="${esc((ts?ts+': ':'')+aria)}"${xsAttr}><line class="stf" x1="2" x2="${W-2}" y1="${LINE}" y2="${LINE}"/>`;
   if(ts){const p=ts.split('/');svg+=`<text class="ts" x="16" y="${LINE-5}">${p[0]}</text><text class="ts" x="16" y="${LINE+19}">${p[1]}</text>`}
   if(!o.nobar)bars.forEach((bx,k)=>{
     svg+=`<line class="bar-l" x1="${bx}" x2="${bx}" y1="${LINE-24}" y2="${LINE+24}"/>`;
     if(k===bars.length-1)svg+=`<line class="bar-l" style="stroke-width:4" x1="${bx+4}" x2="${bx+4}" y1="${LINE-24}" y2="${LINE+24}"/>`;
   });
-  return svg+g+'</svg>';
+  return svg+g+cnt+(o.cursor?`<line class="cur" x1="0" x2="0" y1="${LINE-40}" y2="${LINE+34}" style="visibility:hidden"/>`:'')+'</svg>';
 }
 function setEv(root,i,cls){
   if(!root)return;
@@ -952,6 +1040,28 @@ function onKeys(fn){if(KEYS)document.removeEventListener('keydown',KEYS);KEYS=fn
 const dotsHTML=(n,cls)=>'<div class="beats '+(cls||'')+'" aria-hidden="true">'+'<i></i>'.repeat(n)+'</div>';
 const lightDot=(root,i,g)=>{if(!root)return;const n=root.dataset.tape&&g!==undefined?g:i;root.querySelectorAll('i').forEach((x,k)=>{x.classList.toggle('on',k===n);x.classList.toggle('past',n>=0&&k<n)})};
 
+/* cursor que recorre la partitura al ritmo del audio */
+function moveCur(svg,p){
+  const c=svg&&svg.querySelector('.cur');if(!c)return;
+  const xs=(svg.getAttribute('data-xs')||'').split(',').map(q=>q.split(':').map(Number));
+  if(xs.length<2)return;
+  let x=xs[xs.length-1][1];
+  for(let k=0;k<xs.length-1;k++){
+    if(p>=xs[k][0]-1e-6&&p<xs[k+1][0]){x=xs[k][1]+(p-xs[k][0])/(xs[k+1][0]-xs[k][0])*(xs[k+1][1]-xs[k][1]);break}
+  }
+  c.setAttribute('x1',x);c.setAttribute('x2',x);c.style.visibility='visible';
+}
+function hideCur(svg){const c=svg&&svg.querySelector('.cur');if(c)c.style.visibility='hidden'}
+function cursorLoop(get,s,bd,total){
+  const a=ac();
+  const loop=()=>{
+    const sv=get();
+    if(sv){const p=(a.currentTime-s)/bd;if(p>=-.03&&p<=total+.03)moveCur(sv,Math.max(0,p));else hideCur(sv)}
+    RAF=requestAnimationFrame(loop);
+  };
+  cancelAnimationFrame(RAF);RAF=requestAnimationFrame(loop);
+}
+
 /* reproduce un patrón: cuenta previa, pulso suave y notas sostenidas */
 function playPattern(tl,o){
   const a=ac(),t0=a.currentTime+.2,s=t0+o.cin*o.bd;
@@ -970,11 +1080,12 @@ function playPattern(tl,o){
       atAudio(s+(e.pos+e.d)*o.bd-.03,()=>setEv(o.svg(),e.idx,null));
     }
   });
+  if(o.cursor)cursorLoop(o.cursor,s,o.bd,tl.total);
   if(o.words&&tl.meas){
     const sy=sylTL(tl.meas);
     sy.forEach((y,k)=>atAudio(s+y.pos*o.bd,()=>hiSyl(o.words,k)));
   }
-  atAudio(s+tl.total*o.bd+.1,()=>{if(o.dots)lightDot(o.dots,-1);if(o.words)hiSyl(o.words,-1);if(o.done)o.done()});
+  atAudio(s+tl.total*o.bd+.1,()=>{if(o.cursor){cancelAnimationFrame(RAF);hideCur(o.cursor())}if(o.dots)lightDot(o.dots,-1);if(o.words)hiSyl(o.words,-1);if(o.done)o.done()});
 }
 
 /* ---------- dibujos: Corchea (una nota con carácter), íconos y escenas ---------- */
@@ -1029,6 +1140,7 @@ const ICON={
   check:'<path d="M8 26l11 11L40 12" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   ear:'<path d="M16 40c-3 0-6-3-6-7 0-3 2-4 2-8 0-9 6-17 14-17s14 6 14 14c0 8-8 9-8 15 0 6-4 9-8 9-3 0-4-1-5-3" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M20 22c0-4 3-7 7-7s6 3 6 6" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>',
   mouth:'<path d="M4 24c6-10 14-12 20-8 6-4 14-2 20 8-6 11-14 14-20 14S10 35 4 24z" fill="currentColor"/><path d="M5 24h38" stroke="var(--ibg,#fff)" stroke-width="3"/>',
+  ruler:'<rect x="3" y="14" width="42" height="20" rx="3.5" fill="currentColor"/><path d="M11 14v8M19 14v12M27 14v8M35 14v12" stroke="var(--ibg,#fff)" stroke-width="3" stroke-linecap="round"/>',
   hand:'<path d="M14 24V10a3 3 0 0 1 6 0v10V7a3 3 0 0 1 6 0v13V9a3 3 0 0 1 6 0v13l1-6a3 3 0 0 1 6 1l-3 17c-1 6-5 10-11 10h-3c-5 0-8-3-10-6L8 30a3 3 0 0 1 5-3z" fill="currentColor"/>',
   eye:'<path d="M3 24C9 13 16 9 24 9s15 4 21 15c-6 11-13 15-21 15S9 35 3 24z" fill="currentColor"/><circle cx="24" cy="24" r="7" fill="var(--ibg,#fff)"/><circle cx="24" cy="24" r="3.5" fill="currentColor"/>'
 };
@@ -1045,7 +1157,7 @@ Object.assign(ICON,{
 });
 Object.assign(WORD_ICON,{sx:'fast',esx:'fast',sxe:'fast',edsx:'fast',hd:'dot',qde:'dot',qq:'tie',hq:'tie',syn:'sync',ere:'sync',ttt:'tri',tqt:'tri',ttq:'tri',rtt:'tri',bq:'six',bqr:'six',bh:'six',bhr:'six'});
 Object.assign(LESSON_ICON,{'14.1':'fast','14.2':'fast','14.3':'trophy','15.1':'dot','15.2':'dot','15.3':'fast','15.4':'trophy','16.1':'tie','16.2':'tie','16.3':'trophy','17.1':'sync','17.2':'sync','17.3':'trophy','18.1':'tri','18.2':'tri','18.3':'trophy','19.1':'six','19.2':'tri','19.3':'six','19.4':'trophy','20.1':'three','20.2':'two','20.3':'trophy'});
-const STAGE_ICON={pulso:'pulse',escuchar:'ear',decir:'mouth',tocar:'hand',leer:'eye',conversar:'chat',repaso:'star',intro:'star',examen:'trophy'};
+const STAGE_ICON={pulso:'pulse',escuchar:'ear',medir:'ruler',tocar:'hand',leer:'eye',conversar:'chat',repaso:'star',intro:'star',examen:'trophy'};
 /* escenas de los mundos, blanco y translúcido sobre el color del banner */
 function worldScene(n){
   if(n>4&&typeof thScene==='function')return thScene(n);
@@ -1079,55 +1191,55 @@ function jingle(){try{const a=ac(),t=a.currentTime+.05;[523,659,784,1047].forEac
 const wDisp=n=>n<=3?n:n===4?1:n<=13?n-3:n-10;
 const idDisp=id=>{const m=/^(\d+)\.(\d+)$/.exec(id);return m?wDisp(+m[1])+'.'+m[2]:id};
 const WORLDS=[
-  {n:1,title:'Voy',sub:'Pulso, negras y silencios'},
-  {n:2,title:'Pa-ro',sub:'Blancas, redondas y silencios largos'},
-  {n:3,title:'Co-rro',sub:'Corcheas y otros compases'},
-  {n:14,title:'Ra-pi-di-to',sub:'Semicorcheas: cuatro sonidos en un pulso'},
+  {n:1,title:'Negras y silencios',sub:'El pulso, la negra y su silencio'},
+  {n:2,title:'Blancas y redondas',sub:'Figuras largas y silencios largos'},
+  {n:3,title:'Corcheas',sub:'Dos sonidos por pulso y otros compases'},
+  {n:14,title:'Semicorcheas',sub:'Semicorcheas: cuatro sonidos en un pulso'},
   {n:15,title:'Con puntillo',sub:'Duraciones que suman la mitad'},
   {n:16,title:'Ligaduras',sub:'Dos notas, un solo sonido'},
   {n:17,title:'Síncopa',sub:'Sonidos que caen entre los pulsos'},
-  {n:18,title:'Tre-si-llo',sub:'Tres sonidos iguales en un pulso'},
+  {n:18,title:'Tresillos',sub:'Tres sonidos iguales en un pulso'},
   {n:19,title:'Seis octavos',sub:'Dos pulsos de tres corcheas',exTs:'6/8'},
   {n:20,title:'Todos los compases',sub:'Tres, dos y cuatro con todo lo aprendido'}
 ];
-const ALL5=['escuchar','decir','tocar','leer','conversar'];
+const ALL5=['escuchar','medir','tocar','leer','conversar'];
 const LESSONS=[
   {id:'1.1',w:1,title:'El pulso',ts:'4/4',bpm:72,pool:['q'],focus:[],stages:['pulso'],blurb:'Sentir el latido antes de ponerle nombre.'},
-  {id:'1.2',w:1,title:'Voy y sh',ts:'4/4',bpm:72,pool:['q','qr'],focus:['q','qr'],stages:ALL5,blurb:'La primera palabra y el primer silencio.'},
+  {id:'1.2',w:1,title:'Negra y silencio',ts:'4/4',bpm:72,pool:['q','qr'],focus:['q','qr'],stages:ALL5,blurb:'La negra dura un pulso. Su silencio también.'},
   {id:'1.3',w:1,title:'Frases de dos compases',ts:'4/4',bpm:72,pool:['q','qr'],measures:2,focus:['qr'],stages:['tocar','leer','conversar'],blurb:'Frases más largas con lo que ya sabés.'},
-  {id:'2.1',w:2,title:'Pa-ro',ts:'4/4',bpm:72,pool:['q','qr','h'],focus:['h'],stages:ALL5,blurb:'Un sonido que dura dos pulsos.'},
-  {id:'2.2',w:2,title:'Es-pe-ra-mos',ts:'4/4',bpm:72,pool:['q','qr','h','w'],measures:2,focus:['w'],stages:ALL5,blurb:'Un sonido que dura cuatro pulsos.'},
+  {id:'2.1',w:2,title:'Blanca',ts:'4/4',bpm:72,pool:['q','qr','h'],focus:['h'],stages:ALL5,blurb:'Un sonido que dura dos pulsos.'},
+  {id:'2.2',w:2,title:'Redonda',ts:'4/4',bpm:72,pool:['q','qr','h','w'],measures:2,focus:['w'],stages:ALL5,blurb:'Un sonido que dura cuatro pulsos.'},
   {id:'2.3',w:2,title:'Silencios largos',ts:'4/4',bpm:72,pool:['q','qr','h','hr','w','wr'],measures:2,focus:['hr','wr'],stages:ALL5,blurb:'Esperar dos y cuatro pulsos.'},
   {id:'2.4',w:2,title:'Mezcla de duraciones',ts:'4/4',bpm:76,pool:['q','qr','h','hr','w','wr'],measures:2,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Todo lo anterior, en frases de dos compases.'},
-  {id:'3.1',w:3,title:'Co-rro',ts:'4/4',bpm:72,pool:['q','qr','ee'],focus:['ee'],stages:ALL5,blurb:'Dos sonidos dentro de un pulso.'},
-  {id:'3.2',w:3,title:'Co-rro y pa-ro',ts:'4/4',bpm:76,pool:['q','qr','h','ee'],focus:['ee'],stages:['escuchar','tocar','leer','conversar'],blurb:'Rápido y largo en la misma frase.'},
-  {id:'3.3',w:3,title:'Todo en dos compases',ts:'4/4',bpm:80,pool:['q','qr','h','hr','w','wr','ee'],measures:2,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Siete palabras juntas.'},
+  {id:'3.1',w:3,title:'Corcheas',ts:'4/4',bpm:72,pool:['q','qr','ee'],focus:['ee'],stages:ALL5,blurb:'Dos sonidos dentro de un pulso.'},
+  {id:'3.2',w:3,title:'Corcheas y blancas',ts:'4/4',bpm:76,pool:['q','qr','h','ee'],focus:['ee'],stages:['escuchar','tocar','leer','conversar'],blurb:'Rápido y largo en la misma frase.'},
+  {id:'3.3',w:3,title:'Todo en dos compases',ts:'4/4',bpm:80,pool:['q','qr','h','hr','w','wr','ee'],measures:2,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Siete figuras juntas.'},
   {id:'3.4',w:3,title:'Ritmo en tres',ts:'3/4',bpm:76,pool:['q','qr','h','ee'],focus:[],stages:['escuchar','tocar','leer','conversar'],blurb:'Compás de tres pulsos, como el vals.'},
   {id:'3.5',w:3,title:'Ritmo en dos',ts:'2/4',bpm:76,pool:['q','qr','h','ee'],focus:[],stages:['escuchar','tocar','leer','conversar'],blurb:'Compás de dos pulsos, como la marcha.'},
   /* Mundo 14: semicorcheas */
-  {id:'14.1',w:14,title:'Ra-pi-di-to',ts:'4/4',bpm:64,pool:['q','qr','h','ee','sx'],focus:['sx'],stages:ALL5,blurb:'Cuatro sonidos dentro de un pulso.'},
-  {id:'14.2',w:14,title:'Rápido y más rápido',ts:'4/4',bpm:64,pool:['q','qr','ee','sx','esx','sxe'],focus:['esx','sxe'],stages:['escuchar','tocar','leer','conversar'],blurb:'Corcheas y semicorcheas en el mismo pulso.'},
+  {id:'14.1',w:14,title:'Semicorcheas',ts:'4/4',bpm:64,pool:['q','qr','h','ee','sx'],focus:['sx'],stages:ALL5,blurb:'Cuatro sonidos dentro de un pulso.'},
+  {id:'14.2',w:14,title:'Corchea y semicorcheas',ts:'4/4',bpm:64,pool:['q','qr','ee','sx','esx','sxe'],focus:['esx','sxe'],stages:['escuchar','tocar','leer','conversar'],blurb:'Corcheas y semicorcheas en el mismo pulso.'},
   {id:'14.3',w:14,title:'Mezcla veloz',ts:'4/4',bpm:66,pool:['q','qr','h','hr','ee','sx','esx','sxe'],measures:2,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Todo lo rápido, en frases de dos compases.'},
   /* Mundo 15: puntillo */
-  {id:'15.1',w:15,title:'Es-pe-ra',ts:'4/4',bpm:72,pool:['q','qr','h','hd'],focus:['hd'],stages:ALL5,blurb:'La blanca con puntillo dura tres pulsos.'},
-  {id:'15.2',w:15,title:'Voy-rro',ts:'4/4',bpm:72,pool:['q','qr','h','ee','hd','qde'],focus:['qde'],stages:ALL5,blurb:'Negra con puntillo y corchea: uno y medio, y medio.'},
-  {id:'15.3',w:15,title:'Ra-to',ts:'4/4',bpm:64,pool:['q','qr','ee','sx','qde','edsx'],focus:['edsx'],stages:['escuchar','tocar','leer','conversar'],blurb:'Corchea con puntillo y semicorchea.'},
+  {id:'15.1',w:15,title:'Blanca con puntillo',ts:'4/4',bpm:72,pool:['q','qr','h','hd'],focus:['hd'],stages:ALL5,blurb:'La blanca con puntillo dura tres pulsos.'},
+  {id:'15.2',w:15,title:'Negra con puntillo y corchea',ts:'4/4',bpm:72,pool:['q','qr','h','ee','hd','qde'],focus:['qde'],stages:ALL5,blurb:'Negra con puntillo y corchea: uno y medio, y medio.'},
+  {id:'15.3',w:15,title:'Corchea con puntillo y semicorchea',ts:'4/4',bpm:64,pool:['q','qr','ee','sx','qde','edsx'],focus:['edsx'],stages:['escuchar','tocar','leer','conversar'],blurb:'Corchea con puntillo y semicorchea.'},
   {id:'15.4',w:15,title:'Mezcla con puntillo',ts:'4/4',bpm:68,pool:['q','qr','h','hd','ee','qde','sx','edsx'],measures:2,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Todos los puntillos juntos.'},
   /* Mundo 16: ligaduras */
   {id:'16.1',w:16,title:'Ligadura',ts:'4/4',bpm:72,pool:['q','qr','h','ee','qq','hq'],focus:['qq','hq'],stages:ALL5,blurb:'Dos notas unidas suenan una sola vez.'},
   {id:'16.2',w:16,title:'Ligadura sobre la barra',ts:'4/4',bpm:72,pool:['q','qr','h','ee','qq'],measures:2,tieBar:true,focus:[],stages:['escuchar','tocar','leer','conversar'],blurb:'El sonido cruza la línea del compás.'},
   {id:'16.3',w:16,title:'Mezcla con ligaduras',ts:'4/4',bpm:76,pool:['q','qr','h','hd','ee','qq','hq','qde'],measures:2,tieBar:true,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Ligaduras, puntillos y silencios.'},
   /* Mundo 17: síncopa */
-  {id:'17.1',w:17,title:'Co-voy-rro',ts:'4/4',bpm:72,pool:['q','qr','h','ee','syn'],focus:['syn'],stages:ALL5,blurb:'La síncopa: el sonido largo cae entre dos pulsos.'},
-  {id:'17.2',w:17,title:'Sh-rro',ts:'4/4',bpm:72,pool:['q','qr','h','ee','syn','ere'],focus:['ere'],stages:ALL5,blurb:'Silencio de corchea: el sonido llega después del pulso.'},
+  {id:'17.1',w:17,title:'Síncopa',ts:'4/4',bpm:72,pool:['q','qr','h','ee','syn'],focus:['syn'],stages:ALL5,blurb:'La síncopa: el sonido largo cae entre dos pulsos.'},
+  {id:'17.2',w:17,title:'Silencio de corchea',ts:'4/4',bpm:72,pool:['q','qr','h','ee','syn','ere'],focus:['ere'],stages:ALL5,blurb:'Silencio de corchea: el sonido llega después del pulso.'},
   {id:'17.3',w:17,title:'Síncopa en dos compases',ts:'4/4',bpm:76,pool:['q','qr','h','ee','syn','ere','qde','qq'],measures:2,tieBar:true,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Contratiempos, ligaduras y silencios.'},
   /* Mundo 18: tresillos */
-  {id:'18.1',w:18,title:'Tre-si-llo',ts:'4/4',bpm:68,pool:['q','qr','h','ttt'],focus:['ttt'],stages:ALL5,blurb:'Tres sonidos iguales dentro de un pulso.'},
-  {id:'18.2',w:18,title:'Tre-llo y tre-si',ts:'4/4',bpm:68,pool:['q','qr','h','ttt','tqt','ttq'],focus:['tqt','ttq'],stages:['escuchar','tocar','leer','conversar'],blurb:'Uno largo y uno corto dentro del tresillo.'},
+  {id:'18.1',w:18,title:'Tresillo',ts:'4/4',bpm:68,pool:['q','qr','h','ttt'],focus:['ttt'],stages:ALL5,blurb:'Tres sonidos iguales dentro de un pulso.'},
+  {id:'18.2',w:18,title:'Tresillo: largo y corto',ts:'4/4',bpm:68,pool:['q','qr','h','ttt','tqt','ttq'],focus:['tqt','ttq'],stages:['escuchar','tocar','leer','conversar'],blurb:'Uno largo y uno corto dentro del tresillo.'},
   {id:'18.3',w:18,title:'Mezcla de tresillos',ts:'4/4',bpm:72,pool:['q','qr','h','hr','ttt','tqt','ttq','rtt'],measures:2,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Tresillos con silencio, en dos compases.'},
   /* Mundo 19: 6/8 */
   {id:'19.1',w:19,title:'Dos pulsos de tres',ts:'6/8',bpm:60,pool:['bq','bqr','bh'],measures:2,focus:['bq','bh'],stages:ALL5,blurb:'En 6/8 el pulso es la negra con puntillo.'},
-  {id:'19.2',w:19,title:'Tre-si-llo en seis octavos',ts:'6/8',bpm:60,pool:['bq','bqr','ttt'],measures:2,focus:['ttt'],stages:ALL5,blurb:'Cada pulso se divide en tres corcheas.'},
+  {id:'19.2',w:19,title:'Tres corcheas por pulso',ts:'6/8',bpm:60,pool:['bq','bqr','ttt'],measures:2,focus:['ttt'],stages:ALL5,blurb:'Cada pulso se divide en tres corcheas.'},
   {id:'19.3',w:19,title:'Largo y corto',ts:'6/8',bpm:60,pool:['bq','bqr','ttt','tqt','ttq','bh'],measures:2,focus:['tqt','ttq'],stages:['escuchar','tocar','leer','conversar'],blurb:'Negra y corchea, corchea y negra.'},
   {id:'19.4',w:19,title:'Mezcla en 6/8',ts:'6/8',bpm:64,pool:['bq','bqr','bh','bhr','ttt','tqt','ttq','rtt'],measures:2,focus:[],stages:['tocar','leer','conversar'],boss:true,blurb:'Todo el 6/8 junto.'},
   /* Mundo 20: todos los compases */
@@ -1144,14 +1256,14 @@ const NOTES=[
 ];
 const isUnlocked=i=>save.unlockAll||i===0||!!save.done[LESSONS[i-1].id];
 const isNoteUnlocked=i=>save.unlockAll||i===0||(save.nstars[NOTES[i-1].id]>0);
-const SK=[['e','Escuchar'],['d','Decir'],['t','Tocar'],['l','Leer'],['c','Conversar']];
-const STAGE_NAME={pulso:'Pulso',escuchar:'Escuchar',decir:'Decir',tocar:'Tocar',leer:'Leer',conversar:'Conversar',repaso:'Repaso',intro:'Palabras nuevas',examen:'Examen'};
+const SK=[['e','Escuchar'],['d','Medir'],['t','Tocar'],['l','Leer'],['c','Conversar']];
+const STAGE_NAME={pulso:'Pulso',escuchar:'Escuchar',medir:'Medir',tocar:'Tocar',leer:'Leer',conversar:'Conversar',repaso:'Repaso',intro:'Figura nueva',examen:'Examen'};
 const STAGE_INTRO={
   pulso:'El pulso es el latido de la música. Vas a seguirlo con las manos, tocando en la pantalla o con la barra espaciadora.',
-  escuchar:'Primero el oído. Va a sonar un ritmo, sin partitura. Elegí cómo se dice.',
-  decir:'Ahora hablá. Cada ritmo tiene su palabra. Decila en voz alta siguiendo el pulso.',
-  tocar:'Ahora las manos. Escuchá el ritmo y repetilo tocando.',
-  leer:'Recién ahora aparece la partitura. Unila con lo que ya sabés decir y escuchar.',
+  escuchar:'Primero el oído. Va a sonar un ritmo, sin partitura. Elegí cómo se escribe.',
+  medir:'Cada figura dura lo que ocupa en la regla. Vas a medir, comparar y completar compases, sin sonido.',
+  tocar:'Ahora las manos. Primero con la partitura y la cuenta; después de memoria.',
+  leer:'Ahora la partitura va primero. Leela con su conteo y llevala al sonido.',
   conversar:'Ahora conversá. Te toco una frase y vos respondés con la tuya.',
   examen:'Diez preguntas con todo lo visto hasta este mundo: escuchar, leer, tocar y conversar. Con 80 % o más aprobás y se abre el mundo siguiente. Si no sale, no pasa nada: podés practicar y volver a intentarlo.'
 };
@@ -1356,7 +1468,7 @@ function planFor(L){
   L.stages.forEach(s=>{
     if(s==='pulso'){add('pulso','pulse',{first:true});add('pulso','pulse')}
     if(s==='escuchar'){for(let i=0;i<3;i++)add('escuchar','hear')}
-    if(s==='decir'){for(let i=0;i<2;i++)add('decir','say')}
+    if(s==='medir'){add('medir','match');add('medir','fill');add('medir','fill')}
     if(s==='tocar'){for(let i=0;i<4;i++)add('tocar','tap',{words:i<2})}
     if(s==='leer'){for(let i=0;i<4;i++)add('leer','read',{mode:i%2?'B':'A'})}
     if(s==='conversar'){for(let i=0;i<2;i++)add('conversar','talk',{words:i===0})}
@@ -1372,7 +1484,7 @@ function reviewConfig(){
 }
 function reviewPlan(cfg){
   const weak=reviewList().filter(x=>cfg.pool.includes(x.k)).slice(0,3).map(x=>x.k);
-  const kinds=[['hear',{}],['tap',{words:false}],['read',{mode:'A'}],['talk',{words:false}],['hear',{}],['tap',{words:false}],['read',{mode:'B'}],['talk',{words:false}]];
+  const kinds=[['hear',{}],['tap',{words:false}],['read',{mode:'A'}],['talk',{words:false}],['fill',{}],['tap',{words:false}],['read',{mode:'B'}],['talk',{words:false}]];
   return kinds.map((k,i)=>Object.assign({stage:'repaso',kind:k[0],must:weak.length?[weak[i%weak.length]]:null},k[1]));
 }
 const cinOf=ts=>ts==='2/4'||ts==='6/8'?4:tsBeats(ts);
@@ -1450,7 +1562,7 @@ function endSession(){
   markToday();persist();
   setProg(1,1,'Terminado');fb('');
   const keys=[...S.touched];
-  const bars=keys.map(k=>{const v=vmGet(k);return '<div class="mrow"><b>'+WORD[k]+'</b>'+SK.map(s=>'<span class="mini" title="'+s[1]+'"><i class="k-'+s[0]+'" style="width:'+Math.max(0,Math.round(v[s[0]]))+'%"></i></span>').join('')+'</div>'}).join('');
+  const bars=keys.map(k=>{const v=vmGet(k);return '<div class="mrow"><b>'+FIG[k]+'</b>'+SK.map(s=>'<span class="mini" title="'+s[1]+'"><i class="k-'+s[0]+'" style="width:'+Math.max(0,Math.round(v[s[0]]))+'%"></i></span>').join('')+'</div>'}).join('');
   const idx=LESSONS.indexOf(L);
   const nxt=L.id==='R'?null:LESSONS[idx+1];
   let msg,mood;
@@ -1462,7 +1574,7 @@ function endSession(){
     +'<div class="stars" aria-label="'+stars+' de 3 estrellas">'+[1,2,3].map(n=>'<span class="'+(n<=stars?'':'off')+'">'+ic('star')+'</span>').join('')+'</div>'
     +'<p class="hint">'+msg+'</p>'
     +'<div class="tiles"><div class="tile" style="--tc:var(--c4)"><b>Precisión</b><span>'+Math.round(pct)+'%</span></div>'
-    +'<div class="tile" style="--tc:var(--c2)"><b>Palabras</b><span>'+keys.length+'</span></div>'
+    +'<div class="tile" style="--tc:var(--c2)"><b>Figuras</b><span>'+keys.length+'</span></div>'
     +'<div class="tile" style="--tc:var(--gold-d)"><b>Estrellas</b><span>'+stars+'</span></div></div>'
     +(bars?'<div class="mgrid"><div class="mhead"><span></span>'+SK.map(s=>'<span>'+s[1].slice(0,3)+'</span>').join('')+'</div>'+bars+'</div>':'')
     +'</div>';
@@ -1516,7 +1628,7 @@ function endExam(){
   if(pass)examPass(n,stars);
   persist();
   setProg(1,1,'Terminado');fb('');
-  const weak=Object.keys(S.fails).sort((a,b)=>S.fails[b]-S.fails[a]).slice(0,3).map(k=>WORD[k]);
+  const weak=Object.keys(S.fails).sort((a,b)=>S.fails[b]-S.fails[a]).slice(0,3).map(k=>FIG[k].toLowerCase());
   const line=pass
     ?(n<Math.max(...WORLDS.map(w=>w.n))?'Pasaste. Las lecciones de este mundo quedan hechas y se abrió el Mundo '+(wDisp(n)+1)+'.':'Pasaste. Todo el recorrido de ritmo queda abierto: el repaso va a buscar lo que se te vaya aflojando.')
     :(pct<50?'Todavía falta práctica para llegar al '+PASS+' %.':'Te faltó un poco para llegar al '+PASS+' %.')+(weak.length?' Lo que más costó: '+weak.join(', ')+'.':'')+' Podés practicar con las lecciones del mundo o intentar de nuevo.';
@@ -1545,43 +1657,75 @@ function finishNoteExam(L,pct,detail){
 /* ---------- ejercicios ---------- */
 const EX={};
 
-/* presentación de las palabras nuevas, solo con el oído y la voz */
+/* ---------- figuras: textos y ayudas ---------- */
+const fmtP=d=>({3:'un cuarto de pulso',4:'un tercio de pulso',6:'medio pulso',8:'dos tercios de pulso',9:'tres cuartos de pulso',12:'1 pulso',18:'1 pulso y medio',24:'2 pulsos',30:'2 pulsos y medio',36:'3 pulsos',48:'4 pulsos'})[Math.round(d*12)]||(Math.round(d*100)/100+' pulsos');
+function figInfo(k){
+  const ts=CH[k].map(t=>t.replace('~','')),ties=CH[k].filter(t=>t.endsWith('~')).length;
+  const notes=ts.filter(t=>TOK[t].k==='note').length-ties,rests=ts.filter(t=>TOK[t].k==='rest').length;
+  const parts=[];
+  if(notes)parts.push(notes+(notes>1?' sonidos':' sonido'));
+  if(rests)parts.push(rests>1?rests+' silencios':'silencio');
+  return parts.join(' y ')+' · ocupa '+fmtP(chunkBeats(k));
+}
+const countHint=c=>c.cfg.grid<.5?'Contá: 1 e y a':c.cfg.grid===.5?'Contá: 1 y 2 y':c.cfg.grid<1?'Contá: 1 la li':'Contá los pulsos';
+function pickHole(tgt){
+  const flat=tgt.meas.flat(),tl=timeline(tgt.meas),cand=[];
+  flat.forEach((e,i)=>{if(TOK[e.t].tri||e.tie||(i>0&&flat[i-1].tie))return;cand.push(i)});
+  if(!cand.length)return null;
+  const i=cand[Math.floor(Math.random()*cand.length)],ev=tl.evs[i];
+  return{i,t:flat[i].t,pos:ev.pos,d:ev.d};
+}
+function holeOptions(h,c,needDiff){
+  const pool=new Set(c.cfg.pool.flatMap(k=>CH[k].map(t=>t.replace('~',''))));
+  ['q','h','e','w','qr','hr'].forEach(t=>{if(needDiff||pool.size<4)pool.add(t)});
+  let alt=[...pool].filter(t=>!TOK[t].tri&&t!==h.t&&(!needDiff||Math.abs(TOK[t].d-h.d)>1e-6));
+  alt=shuffle(alt);
+  const out=[],ds=[h.d];
+  alt.forEach(t=>{if(out.length<2&&(!needDiff||!ds.some(d=>Math.abs(d-TOK[t].d)<1e-6))){out.push(t);ds.push(TOK[t].d)}});
+  return shuffle([{t:h.t,right:true}].concat(out.map(t=>({t,right:false}))));
+}
+const oneFig=(t,ts)=>drawRhythm([[{t}]],null,{nobar:true});
+
+/* figura nueva: nombre, cuánto dura y cómo se cuenta */
 EX.intro=(c,it)=>{
   const L=c.S.L,st=c.st;
-  st.innerHTML='<div class="intro">'+mascot('happy',92,'hop')+'<div class="txt"><span class="stg">'+ic('star')+'Palabras nuevas</span><p>Cada ritmo tiene su palabra. Escuchala sin mirar nada y repetila con la voz.</p></div></div><div class="newwords" id="nw"></div>';
+  st.innerHTML='<div class="intro">'+mascot('happy',92,'hop')+'<div class="txt"><span class="stg">'+ic('star')+'Figura nueva</span><p>Cada figura dura lo que ocupa en la regla. Escuchala mientras seguís la cuenta.</p></div></div><div class="newwords" id="nw"></div>';
   L.focus.forEach(k=>{
-    const demo=DEMO[k];
-    const card=document.createElement('div');card.className='nwcard wc'+L.w;
-    card.innerHTML='<div class="top2"><div class="vico">'+ic(WORD_ICON[k])+'</div><div><div class="nwbig">'+WORD[k]+'</div><div class="nwsub">'+KEYNAME[k]+'</div></div></div><div class="words">'+wordsHTML(demo)+'</div><button type="button" class="btn">Escuchar</button>';
+    const demo=DEMO[k],card=document.createElement('div');card.className='nwcard wc'+L.w;
+    const m=demo.find(me=>me.some(e=>CH[k].some(t=>t.replace('~','')===e.t)))||demo[0];
+    card.innerHTML='<div class="top2"><div class="vico">'+ic(WORD_ICON[k])+'</div><div><div class="nwbig">'+FIG[k]+'</div><div class="nwsub">'+figInfo(k)+'</div></div></div>'
+      +'<div class="notation fignote">'+drawRhythm(demo,c.cfg.ts,{count:true,cursor:true})+'</div>'
+      +rulerHTML(m,c.cfg.bpb)+'<button type="button" class="btn">Escuchar contando</button>';
     $('button',card).onclick=()=>{
       cancelPlay();
-      playPattern(timeline(demo),{bd:c.cfg.bd,bpb:c.cfg.bpb,cin:c.cfg.cin,dots:null,words:$('.words',card),metro:.05});
+      playPattern(timeline(demo),{bd:c.cfg.bd,bpb:c.cfg.bpb,cin:c.cfg.cin,dots:null,svg:()=>$('svg',card),cursor:()=>$('svg',card),metro:.08});
     };
     $('#nw').appendChild(card);
   });
   c.ask();
 };
 
-/* escuchar: oír y elegir cómo se dice */
+/* escuchar: oír y elegir la partitura */
 EX.hear=(c,it)=>{
   const tgt=c.pat(),ds=distract(tgt,c.cfg,2);
   const opts=shuffle([{p:tgt,right:true}].concat(ds.map(p=>({p,right:false}))));
   const st=c.st;
-  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">Escuchá el ritmo. ¿Cuál de estas frases es la que sonó?</div></div>'+dotsHTML(c.cfg.bpb)+'<div class="choices opts" id="hCh"></div>';
+  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">Escuchá el ritmo. ¿Cuál es su partitura?</div></div>'+dotsHTML(c.cfg.bpb)+'<div class="choices opts" id="hCh"></div>';
   const dots=$('.beats',st);const listen=()=>{
     cancelPlay();
     playPattern(timeline(tgt.meas),{bd:c.cfg.bd,bpb:c.cfg.bpb,cin:c.cfg.cin,dots,metro:.06});
   };
   opts.forEach(o=>{
-    const b=document.createElement('button');b.type='button';b.className='opt phrase';b.dataset.r=o.right?'1':'';
-    b.innerHTML='<span class="words">'+wordsHTML(o.p.meas)+'</span>';
+    const b=document.createElement('button');b.type='button';b.className='opt';b.dataset.r=o.right?'1':'';
+    b.innerHTML=drawRhythm(o.p.meas,c.cfg.ts);b.setAttribute('aria-label','Opción de partitura');
     b.onclick=()=>{
       cancelPlay();
-      $('#hCh').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.r)x.classList.add('ok')});
-      if(o.right){b.classList.add('ok');fb('A tiempo. Así se hace.','ok')}
-      else{b.classList.add('bad');fb('Casi. Sonó la que quedó en verde. Escuchá de nuevo.','bad')}
+      $('#hCh').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.r){x.classList.add('ok');x.innerHTML=drawRhythm(tgt.meas,c.cfg.ts,{count:true,cursor:true})}});
+      if(o.right){b.classList.add('ok');fb('A tiempo. Esa es la partitura.','ok')}
+      else{b.classList.add('bad');fb('Casi. La que sonó quedó en verde, con su conteo.','bad')}
       c.report({keys:o.right?tgt.keys:diffKeys(tgt.keys,o.p.keys),skill:'e',val:o.right?1:0,scored:true});
-      c.ask([['Escuchar de nuevo',listen]]);
+      const again=()=>{cancelPlay();playPattern(timeline(tgt.meas),{bd:c.cfg.bd,bpb:c.cfg.bpb,cin:c.cfg.cin,dots,svg:()=>$('#hCh .opt.ok svg'),cursor:()=>$('#hCh .opt.ok svg'),metro:.06})};
+      c.ask([['Escuchar de nuevo',again]]);
     };
     $('#hCh').appendChild(b);
   });
@@ -1589,97 +1733,65 @@ EX.hear=(c,it)=>{
   later(listen,350);
 };
 
-/* La cuenta previa suena por el parlante y el micrófono la oye: sirve para medir la latencia y se descarta */
-function leakLatency(ons,clicks){
-  const ds=[],use=clicks.length>=3?clicks.slice(0,-1):[];
-  use.forEach(c=>{const o=ons.find(t=>t>=c&&t<c+.45);if(o!==undefined)ds.push(o-c)});
-  if(ds.length<2)return null;
-  ds.sort((a,b)=>a-b);
-  return ds[ds.length-1]-ds[0]>.1?null:ds[ds.length>>1];
-}
-/* ons: instantes (s del reloj de audio) en que se oyó un sonido. s: inicio del patrón. L: latencia estimada. */
-function voiceMatch(ons,s,expPos,restPos,bd,L,wide,tol){
-  const rel=ons.map(t=>t-s-.01);
-  let best=null;
-  for(let d=wide?-.12:-.06;d<=(wide?.4:.12)+1e-9;d+=.01){
-    let taps=rel.map(x=>x-L-d).filter((x,i,a)=>i===0||x-a[i-1]>.2);
-    // un "sh" dicho en un silencio no cuenta como sonido de más
-    taps=taps.filter(t=>{const dr=Math.min(9,...restPos.map(p=>Math.abs(t-p*bd))),de=Math.min(9,...expPos.map(p=>Math.abs(t-p*bd)));return !(dr<bd*.3&&dr<de)});
-    const r=evalTaps(expPos,taps,bd,tol),sc=r.hits*100-r.extra*10-Math.abs(d)*10;
-    if(!best||sc>best.sc)best={sc,r,d,lat:L+d};
-  }
-  return best;
-}
-
-/* decir: la voz sigue el pulso (con micrófono opcional, como en Duolingo) */
-EX.say=(c,it)=>{
-  const tgt=c.pat(),st=c.st,tl=timeline(tgt.meas),canMic=micOK();
-  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble" id="sHint">Escuchá cómo suena y seguí con la voz.</div></div>'+dotsHTML(c.cfg.bpb)+'<div class="words big" id="sW">'+wordsHTML(tgt.meas)+'</div>'
-    +'<div class="micmeter" id="sMic" hidden><span>Te escucho</span><b><i></i></b></div>';
-  const dots=$('.beats',st),W=$('#sW'),meter=$('#sMic');
-  const bd=c.cfg.bd,bpb=c.cfg.bpb,cin=c.cfg.cin;
-  const clearMarks=()=>W.querySelectorAll('.sy').forEach(x=>x.classList.remove('ok','miss'));
-  const hear=()=>{
-    cancelPlay();meter.hidden=true;clearMarks();$('#sHint').textContent='Escuchá cómo suena y seguí con la voz.';
-    playPattern(tl,{bd,bpb,cin,dots,words:W,metro:.06});
-  };
-  const menu=()=>acts(canMic?[['Escuchar de nuevo',hear],['Decirlo con el micrófono',mineMic,'primary'],['Decirlo sin micrófono',mine]]:[['Escuchar de nuevo',hear],['Decirlo yo',mine,'primary']]);
-  const mine=()=>{
-    cancelPlay();meter.hidden=true;clearMarks();$('#sHint').textContent='Ahora decilo vos, en voz alta. Solo suena el pulso.';
-    playPattern(tl,{bd,bpb,cin,dots,words:W,metro:.16,silent:true,done:()=>{
-      $('#sHint').textContent='¿Lo dijiste?';
-      acts([['Lo dije',said,'primary'],['Otra vez',mine],['Escuchar de nuevo',hear]]);
-    }});
-  };
-  const said=()=>{
-    cancelPlay();
-    c.report({keys:tgt.keys,skill:'d',val:1,scored:false});
-    fb('A tiempo. Decirlo en voz alta ayuda al oído.','ok');
-    c.ask([['Otra vez',mine]]);
-  };
-  const evalVoice=(all,t0,s,clicks)=>{
-    const exp=tl.evs.filter(e=>e.onset),expPos=exp.map(e=>e.pos),rests=tl.evs.filter(e=>!e.onset).map(e=>e.pos);
-    const Lm=leakLatency(all,clicks);
-    // se descartan los sonidos de la cuenta previa (los clics que entran al micrófono)
-    const lastC=clicks[clicks.length-1],guard=Math.min((Lm!=null?Lm+.3:.4),bd*.85);
-    const ons=all.filter(t=>t>=lastC+guard);
-    if(!ons.length){
-      fb('No te escuché. Acercate al micrófono y decilo un poco más fuerte.','bad');
-      c.ask([['Probar otra vez',mineMic]]);return;
-    }
-    const L0=Lm!=null?Lm:(save.micLat!=null?save.micLat:Math.min(.3,(ac().outputLatency||0)+.03));
-    let mg=1;for(let q=1;q<exp.length;q++)mg=Math.min(mg,exp[q].pos-exp[q-1].pos);
-    const m=voiceMatch(ons,s,expPos,rests,bd,L0,Lm==null,Math.min(.4,Math.max(.2,mg*.5))),r=m.r;
-    if(r.hits>=Math.ceil(exp.length/2)){const lat=Math.max(0,Math.min(.6,m.lat));save.micLat=save.micLat==null?lat:save.micLat*.5+lat*.5;persist()}
-    r.acc=Math.max(0,r.hits-.5*r.extra)/exp.length;
-    const sy=sylTL(tgt.meas);
-    exp.forEach((e,k)=>sy.forEach((y,j)=>{if(y.ev===e.idx){const n=W.querySelector('.sy[data-k="'+j+'"]');if(n)n.classList.add(r.ok[k]?'ok':'miss')}}));
-    let msg='Te escuché '+r.hits+' de '+exp.length;
-    if(r.extra)msg+=' · '+r.extra+(r.extra>1?' sonidos':' sonido')+' de más';
-    fb(msg,r.acc>=.6?'ok':'bad');
-    $('#sHint').textContent='Oí '+ons.length+' sonidos'+(ons.length<=14?' en: '+ons.map(t=>(t-s-L0-m.d).toFixed(2)).join(' · ')+' s':'')+'. Esperados: '+expPos.map(p=>(p*bd).toFixed(2)).join(' · ')+' s.';
-    c.report({keys:tgt.keys,skill:'d',val:r.acc,scored:true});
-    c.ask([['Probar otra vez',mineMic]]);
-  };
-  async function mineMic(){
-    cancelPlay();clearMarks();fb('');
-    const hint=$('#sHint');hint.textContent='Pidiendo el micrófono…';
-    try{await micOpen()}catch(e){
-      hint.textContent='No pude usar el micrófono. Revisá el permiso del navegador, o decilo igual sin micrófono.';
-      menu();return;
-    }
-    hint.textContent='Escuchá la cuenta y decilo en voz alta. El pulso se ve pero no suena, así no te tapa.';
-    const a=ac(),t0=a.currentTime+.2,s=t0+cin*bd,all=[],clicks=[];
-    for(let i=0;i<cin;i++){click(t0+i*bd,i===0,.12);clicks.push(t0+i*bd);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
-    for(let b=0;b<tl.total;b++)atAudio(s+b*bd,()=>lightDot(dots,b%bpb));
-    meter.hidden=false;const bar=meter.querySelector('i');
-    micListen(t=>{if(all.length<80)all.push(t)},lv=>{bar.style.width=Math.round(lv*100)+'%'});
-    acts([['Cancelar',()=>{cancelPlay();meter.hidden=true;hint.textContent='Escuchá cómo suena y seguí con la voz.';menu()}]]);
-    atAudio(s+tl.total*bd+Math.max(bd*.6,.6),()=>{micStop();lightDot(dots,-1);meter.hidden=true;evalVoice(all,t0,s,clicks)});
-  }
-  menu();
-  later(hear,350);
+/* medir: la regla muestra cuánto dura cada figura; hay que reconocer la partitura sin sonido */
+EX.match=(c,it)=>{
+  const tgt=c.pat({measures:1}),ds=distract(tgt,Object.assign({},c.cfg,{measures:1}),2);
+  const opts=shuffle([{p:tgt,right:true}].concat(ds.map(p=>({p,right:false}))));
+  const st=c.st,cfg=c.cfg;
+  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">Esta regla muestra cuánto dura cada sonido. Los bloques llenos suenan y los punteados son silencios. ¿Cuál es la partitura?</div></div>'
+    +'<div id="mRul">'+rulerHTML(tgt.meas[0],cfg.bpb)+'</div><div class="choices opts" id="mCh"></div>';
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.type='button';b.className='opt';b.dataset.r=o.right?'1':'';
+    b.innerHTML=drawRhythm(o.p.meas,cfg.ts);b.setAttribute('aria-label','Opción de partitura');
+    b.onclick=()=>{
+      cancelPlay();
+      $('#mCh').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.r){x.classList.add('ok');x.innerHTML=drawRhythm(tgt.meas,cfg.ts,{count:true,cursor:true})}});
+      if(o.right){b.classList.add('ok');fb('Bien medido. Cada figura ocupa lo que dura.','ok')}
+      else{b.classList.add('bad');fb('Casi. Mirá cómo cada bloque coincide con su figura en la correcta.','bad')}
+      c.report({keys:o.right?tgt.keys:diffKeys(tgt.keys,o.p.keys),skill:'d',val:o.right?1:0,scored:true});
+      c.ask([['Escucharlo',()=>{cancelPlay();playPattern(timeline(tgt.meas),{bd:cfg.bd,bpb:cfg.bpb,cin:cfg.cin,svg:()=>$('#mCh .opt.ok svg'),cursor:()=>$('#mCh .opt.ok svg'),metro:.06})}]]);
+    };
+    $('#mCh').appendChild(b);
+  });
+  acts([]);
 };
+
+/* completar el compás: falta una figura (con o sin sonido) */
+function holeEx(c,it,mode){
+  const cfg=c.cfg,sound=mode==='read';
+  let tgt,h;
+  for(let t=0;t<30&&!h;t++){tgt=c.pat({measures:sound?cfg.measures:1});h=pickHole(tgt)}
+  if(!h){tgt=c.pat({measures:1});h={i:0,t:tgt.meas[0][0].t,pos:0,d:TOK[tgt.meas[0][0].t].d}}
+  const opts=holeOptions(h,c,!sound),st=c.st;
+  const hole={from:h.i,to:h.i+1};
+  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">'+(sound?'Escuchá el ritmo completo. En la partitura falta una figura: ¿cuál es?':'Al compás le falta una figura. Mirá cuánto lugar queda libre en la regla y elegí la que entra justo.')+'</div></div>'
+    +'<div class="notation" id="fNot">'+drawRhythm(tgt.meas,cfg.ts,{hole})+'</div>'
+    +(sound?dotsHTML(cfg.bpb):'<div id="fRul">'+rulerHTML(tgt.meas[0],cfg.bpb,{hole:{pos:h.pos,d:h.d}})+'</div>')
+    +'<div class="choices figopts" id="fCh"></div>';
+  const dots=$('.beats',st);
+  const play=()=>{
+    cancelPlay();
+    playPattern(timeline(tgt.meas),{bd:cfg.bd,bpb:cfg.bpb,cin:cfg.cin,dots,svg:()=>$('#fNot svg'),cursor:()=>$('#fNot svg'),metro:.06});
+  };
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.type='button';b.className='opt';b.dataset.r=o.right?'1':'';
+    b.innerHTML=oneFig(o.t);b.setAttribute('aria-label',NAME[o.t]);
+    b.onclick=()=>{
+      cancelPlay();
+      $('#fCh').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.r)x.classList.add('ok')});
+      const nm=NAME[h.t],part=' Faltaba '+(/^[aeiou]/i.test(nm)?'un ':'una ')+nm+': ocupa '+fmtP(h.d)+'.';
+      if(o.right){b.classList.add('ok');fb('Entra justo.'+part,'ok')}
+      else{b.classList.add('bad');fb('No entra bien.'+part,'bad')}
+      $('#fNot').innerHTML=drawRhythm(tgt.meas,cfg.ts,{count:true,cursor:true});
+      const fr=$('#fRul');if(fr)fr.innerHTML=rulerHTML(tgt.meas[0],cfg.bpb);
+      c.report({keys:tgt.keys,skill:sound?'l':'d',val:o.right?1:0,scored:true});
+      c.ask([['Escucharlo',play]]);
+    };
+    $('#fCh').appendChild(b);
+  });
+  if(sound){acts([['Escuchar de nuevo',play,'primary']]);later(play,350)}else acts([]);
+}
+EX.fill=(c,it)=>holeEx(c,it,'fill');
 
 /* tocar: repetir con las manos (y el pulso solo, en la primera lección) */
 EX.pulse=(c,it)=>runTap(c,it,true);
@@ -1696,12 +1808,12 @@ function runTap(c,it,pulse){
   const nBars=Math.max(1,Math.round(tl.total/bpb));
   const labels=pulse?(guided?['Tocá con el clic','Tocá con el clic']:['Tocá con el clic','Tocá sin clic']):(nBars>1?['Repetí el ritmo'].concat(Array(nBars-1).fill('')):['Repetí el ritmo']);
   const hint0=pulse?(guided?'Escuchá la cuenta de '+cin+'. Después tocá una vez en cada clic, '+tl.total+' veces en total.':'Escuchá la cuenta. Tocá '+bpb+' veces con el clic y otras '+bpb+' sin clic: seguí solo.')
-    :(showWords?'Mirá la palabra, escuchá el ritmo y repetilo tocando.':'Esta vez sin ayuda visual. Escuchá y repetí de memoria.');
+    :(showWords?'Mirá la partitura y la cuenta, escuchá el ritmo y repetilo tocando.':'Esta vez sin ayuda visual. Escuchá y repetí de memoria.');
   st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble" id="tHint">'+hint0+'</div></div>'
     +tapeHTML(cin,tl.total,bpb,labels)
-    +(showWords?'<div class="words big" id="tW">'+wordsHTML(tgt.meas)+'</div>':pulse?'':'<div class="mask" id="tM">Ritmo oculto</div>')
+    +(showWords?'<div class="notation" id="tW">'+drawRhythm(tgt.meas,cfg.ts,{count:true,cursor:true})+'</div>':pulse?'':'<div class="mask" id="tM">Ritmo oculto</div>')
     +padHTML;
-  const dots=$('.tape',st),pad=$('.pad',st),W=$('#tW'),hint=$('#tHint');
+  const dots=$('.tape',st),pad=$('.pad',st),hint=$('#tHint');
   const say=t=>{hint.textContent=t};
   padText(pad,pulse?'Primero escuchá':'Tocá acá o usá la barra espaciadora');
   const clearTape=()=>dots.querySelectorAll('i').forEach(x=>x.classList.remove('tap','ok','miss'));
@@ -1720,9 +1832,9 @@ function runTap(c,it,pulse){
       atAudio(t0+(cin+bpb*2)*bd,()=>{lightDot(dots,-1);padText(pad,'Primero escuchá');say('Ahora te toca a vos: apretá «Tocar yo».')});
       return;
     }
-    playPattern(tl,{bd,bpb,cin,dots,words:W,metro:.06});
+    playPattern(tl,{bd,bpb,cin,dots,svg:()=>$('#tW svg'),cursor:()=>$('#tW svg'),metro:.06});
   };
-  function clearMarks(){if(W)W.querySelectorAll('.sy').forEach(x=>x.classList.remove('ok','miss'))}
+  function clearMarks(){const w=$('#tW');if(w)w.querySelectorAll('.ev').forEach(x=>x.classList.remove('ok','miss','on'))}
   const turn=()=>{
     R.done=false;cancelPlay();clearMarks();clearTape();R.taps=[];R.rec=false;
     const a=ac(),t0=a.currentTime+.2,s=t0+cin*bd;R.start=s;
@@ -1731,6 +1843,7 @@ function runTap(c,it,pulse){
     if(pulse)for(let b=0;b<bpb;b++)click(s+b*bd,b===0,.22);
     if(pulse&&guided)for(let b=bpb;b<tl.total;b++)click(s+b*bd,b%bpb===0,.22);
     for(let b=0;b<tl.total;b++)atAudio(s+b*bd,()=>lightDot(dots,b%bpb,cin+b));
+    if(!pulse&&showWords)cursorLoop(()=>$('#tW svg'),s,bd,tl.total);
     atAudio(s-bd*.55,()=>{R.rec=true;pad.disabled=false;padText(pad,pulse?'¡Tocá! 0 de '+tl.total:'¡Tocá!');say(pulse?'¡Ahora vos! Un toque en cada clic.':'¡Ahora vos! Repetí el ritmo.')});
     if(pulse&&!guided)atAudio(s+bpb*bd-bd*.5,()=>say('Sin clic: seguí solo, con el mismo pulso.'));
     atAudio(s+tl.total*bd+bd*.6,()=>{R.rec=false;pad.disabled=true;lightDot(dots,-1);padText(pad,pulse?'Primero escuchá':'Tocá acá o usá la barra espaciadora');evaluate()});
@@ -1743,57 +1856,52 @@ function runTap(c,it,pulse){
     const msg=tapMsg(r,exp.length,bd);
     if(pulse){exp.forEach((e,k)=>{const x=dots.querySelectorAll('i')[cin+Math.round(e.pos)];if(x){x.classList.remove('tap');x.classList.add(r.ok[k]?'ok':'miss')}})}
     if(!pulse){
-      const sy=sylTL(tgt.meas);
-      if(!W){
-        $('#tM').outerHTML='<div class="words big" id="tW">'+wordsHTML(tgt.meas)+'</div>';
+      if(!$('#tW')){
+        $('#tM').outerHTML='<div class="notation" id="tW">'+drawRhythm(tgt.meas,cfg.ts,{count:true})+'</div>';
       }
-      const WW=$('#tW');
-      exp.forEach((e,k)=>sy.forEach((y,j)=>{if(y.ev===e.idx){const n=WW.querySelector('.sy[data-k="'+j+'"]');if(n)n.classList.add(r.ok[k]?'ok':'miss')}}));
+      const WW=$('#tW');hideCur($('svg',WW));
+      exp.forEach((e,k)=>setEv(WW,e.idx,r.ok[k]?'ok':'miss'));
     }
     say(r.acc>=.7?'Muy bien.':'Probá otra vez: escuchá primero y seguí el clic.');
     fb(msg,r.acc>=.7?'ok':'bad');
     c.report({keys:tgt.keys,skill:'t',val:r.acc,scored:true});
-    c.ask([['Probar otra vez',()=>{R.done=false;fb('');clearTape();say(hint0);if(!pulse){const w=$('#tW');if(w)w.querySelectorAll('.sy').forEach(x=>x.classList.remove('ok','miss'))}acts([['Escuchar',listen,'primary'],['Tocar yo',turn]])}]]);
+    c.ask([['Probar otra vez',()=>{R.done=false;fb('');clearTape();say(hint0);if(!pulse){clearMarks()}acts([['Escuchar',listen,'primary'],['Tocar yo',turn]])}]]);
   }
   acts([['Escuchar',listen,'primary'],['Tocar yo',turn]]);
   if(!pulse)later(listen,350);
 }
 
-/* leer: la partitura aparece después del sonido y de la palabra */
+/* leer: la partitura primero; hay que llevarla al sonido o completarla */
 EX.read=(c,it)=>{
-  const tgt=c.pat(),ds=distract(tgt,c.cfg,2);
+  const cfg=c.cfg,bpb=cfg.bpb,bd=cfg.bd,cin=cfg.cin;
+  if(it.mode!=='A')return holeEx(c,it,'read');
+  const tgt=c.pat(),ds=distract(tgt,cfg,2);
   const opts=shuffle([{p:tgt,right:true}].concat(ds.map(p=>({p,right:false}))));
-  const st=c.st,bpb=c.cfg.bpb,bd=c.cfg.bd,cin=c.cfg.cin;
-  const A=it.mode==='A';
-  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">'+(A?'Mirá la partitura. ¿Cómo se dice?':'Escuchá el ritmo. ¿Cuál es su partitura?')+'</div></div>'
-    +(A?'<div class="notation" id="rNot">'+drawRhythm(tgt.meas,c.cfg.ts)+'</div>':dotsHTML(bpb))
-    +'<div class="choices opts" id="rCh"></div>';
+  const st=c.st;
+  st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">Leé la partitura con su conteo. ¿Cuál de estos sonidos es el que está escrito? Oí cada uno y elegí.</div></div>'
+    +'<div class="notation" id="rNot">'+drawRhythm(tgt.meas,cfg.ts,{count:true,cursor:true})+'</div>'+dotsHTML(bpb)+'<div class="sopts" id="rCh"></div>';
   const dots=$('.beats',st);
-  const listen=()=>{
-    cancelPlay();
-    playPattern(timeline(tgt.meas),{bd,bpb,cin,dots:dots||null,svg:A?()=>$('#rNot svg'):null,metro:.06});
-  };
-  opts.forEach(o=>{
-    const b=document.createElement('button');b.type='button';b.className='opt'+(A?' phrase':'');b.dataset.r=o.right?'1':'';
-    b.innerHTML=A?'<span class="words">'+wordsHTML(o.p.meas)+'</span>':drawRhythm(o.p.meas,c.cfg.ts);
-    if(!A)b.setAttribute('aria-label','Opción de partitura');
-    b.onclick=()=>{
+  const listenT=()=>{cancelPlay();playPattern(timeline(tgt.meas),{bd,bpb,cin,dots,svg:()=>$('#rNot svg'),cursor:()=>$('#rNot svg'),metro:.06})};
+  opts.forEach((o,k)=>{
+    const row=document.createElement('div');row.className='sopt';row.dataset.r=o.right?'1':'';
+    row.innerHTML='<button type="button" class="splay">'+ic('ear')+'<span>Oír la opción '+(k+1)+'</span></button><button type="button" class="spick">Es esta</button>';
+    $('.splay',row).onclick=()=>{
       cancelPlay();
-      $('#rCh').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.r)x.classList.add('ok')});
-      if(o.right){b.classList.add('ok');fb('A tiempo. Así se escribe lo que dijiste.','ok')}
-      else{b.classList.add('bad');fb('Casi. La correcta quedó en verde.','bad')}
-      if(A){
-        $('#rNot').innerHTML=drawRhythm(tgt.meas,c.cfg.ts,{words:true});
-      }else{
-        $('#rCh').querySelectorAll('.opt').forEach(x=>{if(x.dataset.r){x.innerHTML=drawRhythm(tgt.meas,c.cfg.ts,{words:true})}});
-      }
-      c.report({keys:o.right?tgt.keys:diffKeys(tgt.keys,o.p.keys),skill:'l',val:o.right?1:0,scored:true});
-      c.ask([['Escuchar',listen]]);
+      $('#rCh').querySelectorAll('.splay').forEach(x=>x.classList.remove('on'));
+      $('.splay',row).classList.add('on');
+      playPattern(timeline(o.p.meas),{bd,bpb,cin,dots,metro:.06});
     };
-    $('#rCh').appendChild(b);
+    $('.spick',row).onclick=()=>{
+      cancelPlay();
+      $('#rCh').querySelectorAll('.sopt').forEach(x=>{x.querySelectorAll('button').forEach(y=>y.disabled=true);if(x.dataset.r)x.classList.add('ok')});
+      if(o.right){fb('A tiempo. Esa es la que está escrita.','ok')}
+      else{row.classList.add('bad');fb('Casi. La que quedó en verde es la que dice la partitura.','bad')}
+      c.report({keys:o.right?tgt.keys:diffKeys(tgt.keys,o.p.keys),skill:'l',val:o.right?1:0,scored:true});
+      c.ask([['Escuchar la partitura',listenT]]);
+    };
+    $('#rCh').appendChild(row);
   });
-  acts([['Escuchar',listen,'primary']]);
-  if(!A)later(listen,350);
+  acts([['Escuchar la partitura',listenT,'primary']]);
 };
 
 /* conversar: pregunta y respuesta */
@@ -1805,12 +1913,11 @@ EX.talk=(c,it)=>{
   const slots=Math.round(bpb/g);
   st.innerHTML='<div class="coach">'+mascot('happy',58)+'<div class="bubble">Te toco una frase de un compás. Después respondé con la tuya, tocando en el compás siguiente. Podés inventar lo que quieras.</div></div>'
     +dotsHTML(bpb)
-    +'<div class="talkrow"><div class="talkcol"><b>Mi frase</b>'+(it.words?'<div class="words" id="kW">'+wordsHTML(call.meas)+'</div>':'<div class="mask small" id="kM">Oculta: escuchala</div>')+'</div>'
+    +'<div class="talkrow"><div class="talkcol"><b>Mi frase</b>'+(it.words?'<div class="notation" id="kW">'+drawRhythm(call.meas,cfg.ts,{count:true,cursor:true})+'</div>':'<div class="mask small" id="kM">Oculta: escuchala</div>')+'</div>'
     +'<div class="talkcol"><b>Tu frase</b><div class="slots" id="kS">'+'<i></i>'.repeat(slots)+'</div></div></div>'
     +padHTML;
   const dots=$('.beats',st),pad=$('.pad',st),W=$('#kW');
   bindPad(pad,R);
-  const sylts=sylTL(call.meas);
   function start(){
     cancelPlay();R.taps=[];R.rec=false;
     $('#kS').querySelectorAll('i').forEach(x=>x.classList.remove('on','ok','miss'));
@@ -1818,8 +1925,8 @@ EX.talk=(c,it)=>{
     for(let i=0;i<bpb;i++){click(t0+i*bd,i===0,.16);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
     for(let b=0;b<bpb*2;b++){click(s+b*bd,b%bpb===0,b<bpb?.06:.12);atAudio(s+b*bd,()=>lightDot(dots,b%bpb))}
     tl.evs.forEach(e=>{if(e.onset)sustain(s+e.pos*bd,e.ad*bd,392)});
-    if(W)sylts.forEach((y,k)=>atAudio(s+y.pos*bd,()=>hiSyl(W,k)));
-    if(W)atAudio(s+bpb*bd,()=>hiSyl(W,-1));
+    if(W){tl.evs.forEach(e=>{atAudio(s+e.pos*bd,()=>setEv($('#kW'),e.idx,'on'));atAudio(s+(e.pos+e.d)*bd-.03,()=>setEv($('#kW'),e.idx,null))});cursorLoop(()=>$('#kW svg'),s,bd,bpb)}
+    if(W)atAudio(s+bpb*bd+.05,()=>{cancelAnimationFrame(RAF);hideCur($('#kW svg'))});
     atAudio(r0-bd*.45,()=>{R.rec=true;pad.disabled=false;padText(pad,'Tu turno: tocá ahora')});
     atAudio(r0+bpb*bd+bd*.3,()=>{R.rec=false;pad.disabled=true;padText(pad,'Tocá acá o usá la barra espaciadora');lightDot(dots,-1);evaluate()});
   }
@@ -1841,7 +1948,7 @@ EX.talk=(c,it)=>{
       msg='Tocaste '+R.taps.length+(R.taps.length>1?' veces':' vez')+', '+good.length+' al compás'+(val>=.7?'. Buena conversación.':'. Probá apoyarte más en el pulso.');
     }
     fb(msg,val>=.7?'ok':'bad');
-    if(!W){$('#kM').outerHTML='<div class="words" id="kW">'+wordsHTML(call.meas)+'</div>'}
+    if(!W){$('#kM').outerHTML='<div class="notation" id="kW">'+drawRhythm(call.meas,cfg.ts,{count:true})+'</div>'}
     c.report({keys:call.keys,skill:'c',val,scored:true});
     const more=[['Otra vez',()=>{fb('');acts([['Empezar',start,'primary']])}]];
     if(uniq.length)more.push(['Escuchar mi frase',()=>{
@@ -3119,7 +3226,7 @@ function renderHome(){
   $('#hPills').innerHTML=
     '<span class="pill fire" title="Semanas seguidas">'+ic('flame')+si.streak+'</span>'+
     '<span class="pill star" title="Estrellas ganadas">'+ic('star')+starsTot+'</span>'+
-    '<span class="pill gem" title="Palabras aprendidas">'+ic('note')+learned.size+'</span>';
+    '<span class="pill gem" title="Figuras aprendidas">'+ic('note')+learned.size+'</span>';
 
   /* bienvenida */
   const track=save.track==='T'?'T':'R';
@@ -3128,7 +3235,7 @@ function renderHome(){
   $('#hWelcome').className='card welcome wc'+(allDone?4:wcFor(LESSONS[nextIdx].w));
   $('#hWelcome').innerHTML=mascot(wm,112,'hop')+'<div class="txt"><h1>'+
     (nm?'Hola, '+esc(nm)+'. ':'')+(first?'Aprendé el ritmo como se aprende un idioma.':allDone?'Recorriste todo el camino de ritmo.':'Seguimos con el idioma del ritmo.')+
-    '</h1><p>'+(first?'Escuchás, decís, tocás, leés y conversás con el ritmo. Hay dos recorridos: Ritmo y Notas y teoría. Si ya sabés, cada mundo tiene un examen para saltearlo.':allDone?'Repasá lo que quedó flojo o probá el mundo de las notas.':'Tu próxima lección: '+LESSONS[nextIdx].title+'.')+'</p><div class="acts"></div></div>';
+    '</h1><p>'+(first?'Escuchás, medís, tocás, leés y conversás con el ritmo. Hay dos recorridos: Ritmo y Notas y teoría. Si ya sabés, cada mundo tiene un examen para saltearlo.':allDone?'Repasá lo que quedó flojo o probá el mundo de las notas.':'Tu próxima lección: '+LESSONS[nextIdx].title+'.')+'</p><div class="acts"></div></div>';
   const acts=$('#hWelcome .acts');
   const cont=document.createElement('button');cont.type='button';cont.className='btn primary big';
   cont.textContent=allDone?'Repasar desde el principio':first?'Empezar':'Continuar';
@@ -3159,7 +3266,7 @@ function renderHome(){
   if(reviewable()){
     const weak=reviewList().filter(x=>reviewConfig().pool.includes(x.k)).filter(x=>x.s<.75);
     rv.hidden=false;
-    rv.innerHTML='<div class="revtop">'+mascot(weak.length?'think':'happy',54)+'<div><h3>Repaso</h3><p>'+(weak.length?weak.length+(weak.length===1?' palabra necesita repaso.':' palabras necesitan repaso.'):'Todo al día. Podés repasar igual.')+'</p></div></div>';
+    rv.innerHTML='<div class="revtop">'+mascot(weak.length?'think':'happy',54)+'<div><h3>Repaso</h3><p>'+(weak.length?weak.length+(weak.length===1?' figura necesita repaso.':' figuras necesitan repaso.'):'Todo al día. Podés repasar igual.')+'</p></div></div>';
     const bt=document.createElement('button');bt.type='button';bt.className='btn primary';bt.textContent=weak.length?'Repasar ahora':'Repaso libre';
     bt.onclick=()=>startLesson(reviewConfig());rv.appendChild(bt);
   }else rv.hidden=true;
@@ -3174,7 +3281,7 @@ function renderHome(){
     const items=LESSONS.filter(l=>l.w===w.n).map(l=>{
       const i=LESSONS.indexOf(l),un=isUnlocked(i),stn=save.done[l.id]||0;
       const st=!un?'lock':(i===nextIdx?'cur':stn?'done':'open');
-      const chips=(l.focus||[]).map(k=>'<span class="chip">'+WORD[k]+'</span>').join('');
+      const chips=(l.focus||[]).map(k=>'<span class="chip">'+FIG[k]+'</span>').join('');
       return{icon:LESSON_ICON[l.id]||'star',title:l.title,stars:stn,state:st,boss:!!l.boss,
         pop:{h:l.title,p:un?l.blurb:'Completá la lección anterior para abrir esta, o rendí el examen del mundo anterior.',chips:un?chips:'',stg:un?(l.stages.length+(l.stages.length===1?' etapa':' etapas')+(l.boss?' · mezcla':'')):'',go:()=>startLesson(l)}};
     });
@@ -3198,7 +3305,7 @@ function renderHome(){
     const card=document.createElement('div');card.className='vcard wc'+keyWc(k)+(on?'':' off');
     const bars=SK.map(s=>{const val=v&&v[s[0]]>0?Math.round(v[s[0]]):0;return '<span title="'+s[1]+': '+val+' %"><span class="meter"><i class="k-'+s[0]+'" style="width:'+val+'%"></i></span>'+s[1].slice(0,3)+'</span>'}).join('');
     const tag=on?(vmStrength(k)<.6?'<span class="tag warn">Para repasar</span>':'<span class="tag">Al día</span>'):'<span class="tag mute">Todavía no</span>';
-    card.innerHTML='<div class="vtop"><div class="vico">'+ic(WORD_ICON[k])+'</div><div class="vname"><b>'+WORD[k]+'</b><small>'+KEYNAME[k]+'</small></div></div><div class="vm5">'+bars+'</div>'+tag;
+    card.innerHTML='<div class="vtop"><div class="vico">'+ic(WORD_ICON[k])+'</div><div class="vname"><b>'+FIG[k]+'</b><small>'+figInfo(k)+'</small></div></div><div class="vm5">'+bars+'</div>'+tag;
     vb.appendChild(card);
   });
 }
@@ -3353,7 +3460,7 @@ function init(){
   renderHome();
   prepClef();prepBass();
 }
-if(typeof __TEST__!=='undefined'){__TEST__.api={genMeasure,genKeys,genPat,distract,timeline,soundKey,drawRhythm,wordsHTML,phrase,sylTL,evSyls,stepName,stepFreq,LESSONS,NOTES,CH,TOK,WORD,tsBeats,noteSvg,staffBase,planFor,vmUpdate,vmStrength,streakInfo,evalTaps,save,G,TL,TWORLDS,thUnlocked,startTheory,startTheoryExam,scaleOf,majName,minName,ksList,chordOf,cifName,ivInfo,staffSVG,pianoSVG,symSVG,mascot}}
+if(typeof __TEST__!=='undefined'){__TEST__.api={genMeasure,genKeys,genPat,distract,timeline,soundKey,drawRhythm,wordsHTML,phrase,sylTL,evSyls,stepName,stepFreq,LESSONS,NOTES,CH,TOK,WORD,tsBeats,noteSvg,staffBase,planFor,vmUpdate,vmStrength,streakInfo,evalTaps,save,G,TL,TWORLDS,thUnlocked,startTheory,startTheoryExam,scaleOf,majName,minName,ksList,chordOf,cifName,ivInfo,staffSVG,pianoSVG,symSVG,mascot,rulerHTML,FIG,figInfo,pickHole,holeOptions,shuffle}}
 else init();
 })();
 </script>
