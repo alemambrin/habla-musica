@@ -660,7 +660,7 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 
 /* ---------- progreso guardado ---------- */
 const KEY='pulsoColectivo.v2';
-const APP_VER='1.5';
+const APP_VER='1.6';
 let save={name:'',done:{},vm:{},days:[],nstars:{},exam:{},offset:0,vol:80,unlockAll:false};
 /* Toda entrada externa (memoria del navegador o código importado) se reconstruye campo por campo: solo pasan claves y tipos conocidos */
 function cleanSave(o){
@@ -1070,11 +1070,11 @@ function sustain(t,d,f){
 function pluck(f,t,d){tone(f,t,d,'triangle',.4);tone(f*2,t,d*.5,'sine',.1)}
 
 /* ---------- control de tiempos de la partida ---------- */
-let TM=[],RAF=0,KEYS=null;
+let TM=[],RAF=0,KEYS=null,RECOVER=null;
 const later=(fn,ms)=>{const id=setTimeout(fn,Math.max(0,ms));TM.push(id);return id};
 const atAudio=(t,fn)=>later(fn,(t-ac().currentTime)*1000);
 function cancelPlay(){TM.forEach(clearTimeout);TM=[];cancelAnimationFrame(RAF);RAF=0;killAudio();micStop()}
-function stopAll(){cancelPlay();if(KEYS){document.removeEventListener('keydown',KEYS);KEYS=null}}
+function stopAll(){cancelPlay();RECOVER=null;if(KEYS){document.removeEventListener('keydown',KEYS);KEYS=null}}
 function onKeys(fn){if(KEYS)document.removeEventListener('keydown',KEYS);KEYS=fn;document.addEventListener('keydown',fn)}
 const dotsHTML=(n,cls)=>'<div class="beats '+(cls||'')+'" aria-hidden="true">'+'<i></i>'.repeat(n)+'</div>';
 const lightDot=(root,i,g)=>{if(!root)return;const n=root.dataset.tape&&g!==undefined?g:i;root.querySelectorAll('i').forEach((x,k)=>{x.classList.toggle('on',k===n);x.classList.toggle('past',n>=0&&k<n)})};
@@ -1553,7 +1553,7 @@ function runSession(L,plan){
   advance();
 }
 function advance(){
-  cancelPlay();
+  cancelPlay();RECOVER=null;
   const S=SES;S.i++;
   if(S.i>=S.plan.length)return endSession();
   const it=S.plan[S.i];
@@ -1674,7 +1674,8 @@ function endExam(){
   $('#pStage').innerHTML=examResultHTML(pass,pct,stars,line,'<div class="tile" style="--tc:var(--gold-d)"><b>Estrellas</b><span>'+(pass?stars:0)+'</span></div>');
   if(pass){confetti();jingle()}
   const list=[];
-  if(pass)list.push(['Ir al camino',goHome,'primary big'],['Repetir examen',()=>startExam(n)]);
+  const nx=pass?LESSONS.find(l=>l.w>n):null;
+  if(pass)list.push(...(nx?[['Siguiente lección',()=>startLesson(nx),'primary big'],['Ir al camino',goHome]]:[['Ir al camino',goHome,'primary big']]),['Repetir examen',()=>startExam(n)]);
   else list.push(['Intentar de nuevo',()=>startExam(n),'primary big'],['Volver al camino',goHome]);
   acts(list);
 }
@@ -1874,8 +1875,14 @@ function runTap(c,it,pulse){
     playPattern(tl,{bd,bpb,cin,dots,svg:()=>$('#tW svg'),cursor:()=>$('#tW svg'),metro:.06});
   };
   function clearMarks(){const w=$('#tW');if(w)w.querySelectorAll('.ev').forEach(x=>x.classList.remove('ok','miss','on'))}
+  const recover=()=>{
+    R.rec=false;R.done=false;pad.disabled=true;lightDot(dots,-1);clearTape();clearMarks();
+    padText(pad,pulse?'Primero escuchá':'Tocá acá o usá la barra espaciadora');
+    say('Se cortó porque saliste de la app. Probá de nuevo.');fb('');
+    acts([['Escuchar',listen,'primary'],['Tocar yo',turn],['Saltar',advance]]);
+  };
   const turn=()=>{
-    R.done=false;cancelPlay();clearMarks();clearTape();R.taps=[];R.rec=false;
+    R.done=false;cancelPlay();clearMarks();clearTape();R.taps=[];R.rec=false;RECOVER=recover;
     const a=ac(),t0=a.currentTime+.2,s=t0+cin*bd;R.start=s;
     padText(pad,'Escuchá la cuenta…');say('Escuchá la cuenta: todavía no toques.');
     for(let i=0;i<cin;i++){click(t0+i*bd,i===0,.16);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb,i))}
@@ -1888,6 +1895,7 @@ function runTap(c,it,pulse){
     atAudio(s+tl.total*bd+bd*.6,()=>{R.rec=false;pad.disabled=true;lightDot(dots,-1);padText(pad,pulse?'Primero escuchá':'Tocá acá o usá la barra espaciadora');evaluate()});
   };
   function evaluate(){
+    RECOVER=null;
     const exp=tl.evs.filter(e=>e.onset);
     let mg=1;for(let q=1;q<exp.length;q++)mg=Math.min(mg,exp[q].pos-exp[q-1].pos);
     const r=evalTaps(exp.map(e=>e.pos),R.taps,bd,Math.min(.32,Math.max(.12,mg*.45)));
@@ -1957,8 +1965,14 @@ EX.talk=(c,it)=>{
     +padHTML;
   const dots=$('.beats',st),pad=$('.pad',st),W=$('#kW');
   bindPad(pad,R);
+  function recover(){
+    R.rec=false;pad.disabled=true;lightDot(dots,-1);
+    $('#kS').querySelectorAll('i').forEach(x=>x.classList.remove('on','ok','miss'));
+    padText(pad,'Tocá acá o usá la barra espaciadora');fb('');
+    acts([['Empezar',start,'primary'],['Saltar',advance]]);
+  }
   function start(){
-    cancelPlay();R.taps=[];R.rec=false;
+    cancelPlay();R.taps=[];R.rec=false;RECOVER=recover;
     $('#kS').querySelectorAll('i').forEach(x=>x.classList.remove('on','ok','miss'));
     const a=ac(),t0=a.currentTime+.2,s=t0+bpb*bd,r0=s+bpb*bd;R.start=r0;
     for(let i=0;i<bpb;i++){click(t0+i*bd,i===0,.16);atAudio(t0+i*bd,()=>lightDot(dots,i%bpb))}
@@ -1970,6 +1984,7 @@ EX.talk=(c,it)=>{
     atAudio(r0+bpb*bd+bd*.3,()=>{R.rec=false;pad.disabled=true;padText(pad,'Tocá acá o usá la barra espaciadora');lightDot(dots,-1);evaluate()});
   }
   function evaluate(){
+    RECOVER=null;
     const q=[];
     R.taps.forEach(tp=>{
       const pb=tp/bd,qq=Math.round(pb/g)*g,err=Math.abs(pb-qq);
@@ -2024,7 +2039,7 @@ function finishNote(L,pct,detail){
     +'<p class="hint">'+detail+'</p></div>';
   confetti();jingle();
   if(nxt)acts([['Siguiente nivel',()=>startNote(nxt),'primary big'],['Repetir',()=>startNote(L)],['Volver al camino',goHome]]);
-  else acts([['Repetir',()=>startNote(L),'primary big'],['Volver al camino',goHome]]);
+  else acts([['Examen de Notas',()=>startNote(NOTE_EXAM),'primary big'],['Repetir',()=>startNote(L)],['Volver al camino',goHome]]);
 }
 function runRain(L){
   const W=640,ZONE=120,SX=620;
@@ -2066,6 +2081,7 @@ function runRain(L){
     later(spawn,1200);
   }
   let last=0;
+  RECOVER=()=>{if(R.ended)return;last=0;cancelAnimationFrame(RAF);if(R.ok>=L.goal){win();return}spawn();RAF=requestAnimationFrame(frame)};
   function frame(ts){
     if(R.ended)return;
     if(!last)last=ts;
@@ -3097,7 +3113,7 @@ function thEnd(){
   const L=S.L,idx=TL.indexOf(L),nxt=!S.exam&&pass?TL[idx+1]:null;
   const again=()=>S.exam?startTheoryExam(L.exam):startTheory(L);
   if(nxt)list.push(['Siguiente lección',()=>startTheory(nxt),'primary big'],['Repetir',again],['Volver al camino',goHome]);
-  else if(pass)list.push(['Ir al camino',goHome,'primary big'],['Repetir',again]);
+  else if(pass){const nx=S.exam?TL.find(l=>l.w>S.L.exam):null;if(nx)list.push(['Siguiente lección',()=>startTheory(nx),'primary big'],['Ir al camino',goHome],['Repetir',again]);else list.push(['Ir al camino',goHome,'primary big'],['Repetir',again])}
   else list.push(['Intentar de nuevo',again,'primary big'],['Volver al camino',goHome]);
   acts(list);
 }
@@ -3490,7 +3506,7 @@ function init(){
       persist();renderHome();$('#oCode').value='';$('#oMsg2').textContent='Avance cargado.';
     }catch(e){disarmImp();$('#oMsg2').textContent='Ese código no sirve. Copialo de nuevo completo, sin cortar ni agregar nada.'}
   };
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelPlay();micClose();syncNow()}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelPlay();micClose();syncNow()}else if(RECOVER){const f=RECOVER;RECOVER=null;try{f()}catch(e){}}});
   /* ---------- grupo del profe (opcional) ---------- */
   $('#wGo').onclick=wGo;$('#wSkip').onclick=()=>wFinish('');
   $('#wCode').addEventListener('keydown',e=>{if(e.key==='Enter')wGo()});$('#wName').addEventListener('keydown',e=>{if(e.key==='Enter')$('#wCode').focus()});
